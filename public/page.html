@@ -1,0 +1,23 @@
+<!doctype html>
+
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="twitter/bootstrap.min.css">
+		<link rel="stylesheet" type="text/css" href="FortAwesome/css/font-awesome.min.css">
+		<link rel="stylesheet" type="text/css" href="page.css">
+		<script type="text/javascript" src="requirejs/require.js" data-main="page"></script>
+		<title>DropFB</title>
+	</head>
+	<body data-context="appContext">
+		<div class="navbar navbar-static-top navbar-inverse">
+			<div class="container">
+				<a class="navbar-brand" href="#">DropFB</a>
+				<button class="btn btn-default navbar-btn pull-right" data-hideif="userLoggedIn" data-event-click="appContext.login"><i class="icon-facebook-sign"></i> Login</button>
+				<p class="navbar-text pull-right" data-showif="userLoggedIn" data-bind="currentUser.name"></p>
+			</div>
+		</div>
+		<div class="container">
+
+		</div>
+	</body>
+</html>
