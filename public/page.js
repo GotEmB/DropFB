@@ -8,7 +8,7 @@ require.config({
     batman: "batmanjs/batman",
     bootstrap: "twitter/bootstrap.min",
     facebook: "//connect.facebook.net/en_US/all",
-    dropbox: "//cdnjs.cloudflare.com/ajax/libs/dropbox.js/0.10.0/dropbox.min",
+    dropbox: "//dropbox.com/static/api/1/dropins",
     socket_io: "socket.io/socket.io"
   },
   shim: {
@@ -36,7 +36,7 @@ define("Batman", ["batman"], function(Batman) {
 });
 
 require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], function($, Batman, FB, Dropbox, io) {
-  var AppContext, DropFB, User, _ref, _ref1;
+  var AppContext, DropFB, Task, User, _ref, _ref1, _ref2;
   User = (function(_super) {
     __extends(User, _super);
 
@@ -48,15 +48,22 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
     return User;
 
   })(Batman.Model);
+  Task = (function(_super) {
+    __extends(Task, _super);
+
+    function Task() {
+      _ref1 = Task.__super__.constructor.apply(this, arguments);
+      return _ref1;
+    }
+
+    return Task;
+
+  })(Batman.Model);
   AppContext = (function(_super) {
     __extends(AppContext, _super);
 
     AppContext.accessor("userLoggedIn", function() {
       return this.get("currentUser") instanceof User;
-    });
-
-    AppContext.accessor("requireDbAuth", function() {
-      return this.get("userLoggedIn") && (this.get("currentUser.dbAccessToken") == null);
     });
 
     function AppContext() {
@@ -68,9 +75,7 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
         appId: "364692580326195",
         status: true
       });
-      Dropbox = new Dropbox.Client({
-        key: "wy7kcrp5mm8debj"
-      });
+      Dropbox.appKey = "wy7kcrp5mm8debj";
       FB.Event.subscribe("auth.authResponseChange", this.fbLoginStatusChanged = function(_arg) {
         var fbAuthResponse, fbStatus;
         fbStatus = _arg.status, fbAuthResponse = _arg.authResponse;
@@ -82,21 +87,19 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
           return;
         }
         if (fbStatus === "connected" && (fbAuthResponse != null)) {
-          FB.api("/me", function(response2) {
-            _this.set("currentUser", new User({
-              name: response2.name,
-              userId: fbAuthResponse.userID
-            }));
+          return FB.api("/me", function(response2) {
             socket = io.connect();
             return socket.on("connect", function() {
               return socket.emit("handshake", {
                 userId: _this.get("userId")
               }, function(_arg1) {
-                var dbAccessToken;
-                dbAccessToken = _arg1.dbAccessToken;
-                if (dbAccessToken != null) {
-                  (function() {})();
-                }
+                var tasks;
+                tasks = _arg1.tasks;
+                _this.set("currentUser", new User({
+                  name: response2.name,
+                  userId: fbAuthResponse.userID
+                }));
+                _this.set("tasks", new Batman.Set);
                 _this.set("pageLoading", false);
                 return delete _this.fbLoginStatusChanged.inProgress;
               });
@@ -108,8 +111,8 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
             socket.disconnect();
           }
           _this.set("pageLoading", false);
+          return delete _this.fbLoginStatusChanged.inProgress;
         }
-        return delete _this.fbLoginStatusChanged.inProgress;
       });
       FB.getLoginStatus(this.fbLoginStatusChanged);
     }
@@ -118,10 +121,27 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
       return FB.login();
     };
 
-    AppContext.prototype.dbLogin = function() {
+    AppContext.prototype.dbChooseFiles = function() {
       var _this = this;
-      return Dropbox.authenticate(function(error, client) {
-        return console.log(arguments);
+      return Dropbox.choose({
+        linkType: "direct",
+        multiselect: true,
+        success: function(files) {
+          var file, _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = files.length; _i < _len; _i++) {
+            file = files[_i];
+            if ((file.thumbnails != null) && file.bytes < 1 << 30 && (_this.get("tasks").find(function(x) {
+              return x.path === file.link;
+            }) == null)) {
+              _results.push(_this.get("tasks").add(new Task({
+                path: file.link,
+                thumbnail: file.thumbnails["200x200"]
+              })));
+            }
+          }
+          return _results;
+        }
       });
     };
 
@@ -132,8 +152,8 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
     __extends(DropFB, _super);
 
     function DropFB() {
-      _ref1 = DropFB.__super__.constructor.apply(this, arguments);
-      return _ref1;
+      _ref2 = DropFB.__super__.constructor.apply(this, arguments);
+      return _ref2;
     }
 
     DropFB.appContext = new AppContext;
