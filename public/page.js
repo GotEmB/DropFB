@@ -7,21 +7,35 @@ require.config({
     jquery: "jquery/jquery-2.0.3.min",
     batman: "batmanjs/batman",
     bootstrap: "twitter/bootstrap.min",
-    facebook: "//connect.facebook.net/en_US/all"
+    facebook: "//connect.facebook.net/en_US/all",
+    dropbox: "//cdnjs.cloudflare.com/ajax/libs/dropbox.js/0.10.0/dropbox.min",
+    socket_io: "socket.io/socket.io"
   },
   shim: {
     batman: {
       deps: ["jquery"],
       exports: "Batman"
     },
-    bootstrap: ["jquery"],
+    bootstrap: {
+      deps: ["jquery"]
+    },
     facebook: {
       exports: "FB"
+    },
+    dropbox: {
+      exports: "Dropbox"
+    },
+    socket_io: {
+      exports: "io"
     }
   }
 });
 
-require(["jquery", "batman", "facebook", "bootstrap"], function($, Batman, FB) {
+define("Batman", ["batman"], function(Batman) {
+  return Batman.DOM.readers.batmantarget = Batman.DOM.readers.target && delete Batman.DOM.readers.target && Batman;
+});
+
+require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], function($, Batman, FB, Dropbox, io) {
   var AppContext, DropFB, User, _ref, _ref1;
   User = (function(_super) {
     __extends(User, _super);
@@ -41,30 +55,74 @@ require(["jquery", "batman", "facebook", "bootstrap"], function($, Batman, FB) {
       return this.get("currentUser") instanceof User;
     });
 
+    AppContext.accessor("requireDbAuth", function() {
+      return this.get("userLoggedIn") && (this.get("currentUser.dbAccessToken") == null);
+    });
+
     function AppContext() {
-      var _this = this;
+      var socket,
+        _this = this;
+      this.set("pageLoading", "true");
+      socket = void 0;
       FB.init({
         appId: "364692580326195",
         status: true
       });
-      FB.Event.subscribe("auth.authResponseChange", function(response1) {
-        console.log(response1);
-        if (response1.status === "connected" && (response1.authResponse != null)) {
-          return FB.api("/me", function(response2) {
-            return _this.set("currentUser", new User({
+      Dropbox = new Dropbox.Client({
+        key: "wy7kcrp5mm8debj"
+      });
+      FB.Event.subscribe("auth.authResponseChange", this.fbLoginStatusChanged = function(_arg) {
+        var fbAuthResponse, fbStatus;
+        fbStatus = _arg.status, fbAuthResponse = _arg.authResponse;
+        if (_this.fbLoginStatusChanged.inProgress != null) {
+          return;
+        }
+        _this.fbLoginStatusChanged.inProgress = true;
+        if (fbStatus === "connected" && _this.get("userLoggedIn")) {
+          return;
+        }
+        if (fbStatus === "connected" && (fbAuthResponse != null)) {
+          FB.api("/me", function(response2) {
+            _this.set("currentUser", new User({
               name: response2.name,
-              accessToken: response1.authResponse.accessToken,
-              userId: response1.authResponse.userID
+              userId: fbAuthResponse.userID
             }));
+            socket = io.connect();
+            return socket.on("connect", function() {
+              return socket.emit("handshake", {
+                userId: _this.get("userId")
+              }, function(_arg1) {
+                var dbAccessToken;
+                dbAccessToken = _arg1.dbAccessToken;
+                if (dbAccessToken != null) {
+                  (function() {})();
+                }
+                _this.set("pageLoading", false);
+                return delete _this.fbLoginStatusChanged.inProgress;
+              });
+            });
           });
         } else {
-          return _this.unset("currentUser");
+          _this.unset("currentUser");
+          if (socket != null) {
+            socket.disconnect();
+          }
+          _this.set("pageLoading", false);
         }
+        return delete _this.fbLoginStatusChanged.inProgress;
       });
+      FB.getLoginStatus(this.fbLoginStatusChanged);
     }
 
-    AppContext.prototype.login = function() {
+    AppContext.prototype.fbLogin = function() {
       return FB.login();
+    };
+
+    AppContext.prototype.dbLogin = function() {
+      var _this = this;
+      return Dropbox.authenticate(function(error, client) {
+        return console.log(arguments);
+      });
     };
 
     return AppContext;
