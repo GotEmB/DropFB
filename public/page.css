@@ -1,5 +1,63 @@
+body {
+  padding-top: 70px;
+}
 .btn-primary > [class^="icon-"],
 [class*=" icon-"] {
   font-size: 1.5em;
   line-height: 0.5em;
+}
+input[type="text"].caption-box,
+textarea.description-box {
+  border: none;
+  -webkit-border-radius: 0;
+  border-radius: 0;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  outline: none;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  padding: 0;
+  background-color: transparent;
+}
+input[type="text"].caption-box[readonly],
+textarea.description-box[readonly],
+input[type="text"].caption-box[disabled],
+textarea.description-box[disabled] {
+  cursor: default;
+  background-color: transparent;
+}
+input[type="text"].caption-box {
+  font-weight: 500;
+  line-height: 1.1;
+  font-size: 24px;
+}
+textarea.description-box {
+  font-size: 14px;
+  resize: none;
+}
+#navbar2 {
+  position: relative;
+}
+#navbar2.affix {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 70px;
+  z-index: 100;
+}
+#navbar2.affix + div {
+  margin-top: 70px;
+}
+#navbar2.affix > .backdrop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -20px;
+  bottom: 0;
+  background-color: #fff;
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #fff), color-stop(0.5, #fff), color-stop(1, transparent));
+  background: -webkit-linear-gradient(top, #fff 0, #fff 50px, transparent 100%);
+  background: -moz-linear-gradient(top, #fff 0, #fff 50px, transparent 100%);
+  background: -o-linear-gradient(top, #fff 0, #fff 50px, transparent 100%);
+  background: -ms-linear-gradient(top, #fff 0, #fff 50px, transparent 100%);
+  background: linear-gradient(top, #fff 0, #fff 50px, transparent 100%);
 }

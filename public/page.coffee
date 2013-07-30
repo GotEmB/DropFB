@@ -53,9 +53,12 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 		dbChooseFiles: ->
 			Dropbox.choose linkType: "direct", multiselect: true, success: (files) =>
 				for file in files when file.thumbnails? and file.bytes < 1 << 30 and not @get("tasks").find((x) => x.path is file.link)?
-					@get("tasks").add new Task path: file.link, thumbnail: file.thumbnails["200x200"]
+					@get("tasks").add new Task path: file.link, thumbnail: file.thumbnails["640x480"]
 
 	class DropFB extends Batman.App
 		@appContext: new AppContext
 
 	DropFB.run()
+
+	$ ->
+		$("#navbar2").affix offset: top: 75

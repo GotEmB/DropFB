@@ -136,7 +136,7 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
             }) == null)) {
               _results.push(_this.get("tasks").add(new Task({
                 path: file.link,
-                thumbnail: file.thumbnails["200x200"]
+                thumbnail: file.thumbnails["640x480"]
               })));
             }
           }
@@ -161,7 +161,14 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
     return DropFB;
 
   })(Batman.App);
-  return DropFB.run();
+  DropFB.run();
+  return $(function() {
+    return $("#navbar2").affix({
+      offset: {
+        top: 75
+      }
+    });
+  });
 });
 
 /*
