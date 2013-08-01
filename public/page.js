@@ -6,7 +6,7 @@ require.config({
   paths: {
     jquery: "jquery/jquery-2.0.3.min",
     batman: "batmanjs/batman",
-    bootstrap: "twitter/bootstrap.min",
+    bootstrap: "//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/js/bootstrap.min",
     facebook: "//connect.facebook.net/en_US/all",
     dropbox: "//dropbox.com/static/api/1/dropins",
     socket_io: "socket.io/socket.io"
