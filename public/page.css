@@ -6,8 +6,8 @@ body {
   font-size: 1.5em;
   line-height: 0.5em;
 }
-input[type="text"].caption-box,
-textarea.description-box {
+input.form-control[type="text"].caption-box,
+textarea.form-control.description-box {
   border: none;
   -webkit-border-radius: 0;
   border-radius: 0;
@@ -18,19 +18,19 @@ textarea.description-box {
   padding: 0;
   background-color: transparent;
 }
-input[type="text"].caption-box[readonly],
-textarea.description-box[readonly],
-input[type="text"].caption-box[disabled],
-textarea.description-box[disabled] {
+input.form-control[type="text"].caption-box[readonly],
+textarea.form-control.description-box[readonly],
+input.form-control[type="text"].caption-box[disabled],
+textarea.form-control.description-box[disabled] {
   cursor: default;
   background-color: transparent;
 }
-input[type="text"].caption-box {
+input.form-control[type="text"].caption-box {
   font-weight: 500;
   line-height: 1.1;
   font-size: 24px;
 }
-textarea.description-box {
+textarea.form-control.description-box {
   font-size: 14px;
   resize: none;
 }
@@ -60,4 +60,15 @@ textarea.description-box {
   background: -o-linear-gradient(top, #fff 0, #fff 50px, transparent 100%);
   background: -ms-linear-gradient(top, #fff 0, #fff 50px, transparent 100%);
   background: linear-gradient(top, #fff 0, #fff 50px, transparent 100%);
+}
+@media (max-width: 767px) {
+  .hide-sm {
+    display: none;
+  }
+}
+.icon-stack {
+  width: 1em;
+  height: 1em;
+  line-height: 1em;
+  vertical-align: -17%;
 }

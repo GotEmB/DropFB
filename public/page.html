@@ -54,9 +54,20 @@
 					<div class="backdrop"></div>
 					<div class="col-lg-12 col-sm-12 col-12">
 						<div class="navbar container" data-spy="affix">
-							<p class="navbar-text">No files selected</p>
-							<div class="nav navbar-nav pull-right">
-								
+							<div class="navbar-form btn-group pull-left">
+								<button class="btn btn-default" disabled>0<span class="hide-sm">&nbsp;Selected</span></button>
+								<button class="btn btn-default">
+									<span class="icon-stack">
+										<i class="icon-ok" style="top:-3px"></i>
+										<i class="icon-ok" style="top:3px"></i>
+									</span>
+									<span class="hide-sm">&nbsp;Select All</span>
+								</button>
+								<button class="btn btn-default"><i class="icon-remove"></i><span class="hide-sm">&nbsp;&nbsp;Clear</span></button>
+							</div>
+							<div class="navbar-form btn-group pull-right">
+								<button class="btn btn-default"><i class="icon-arrow-right"></i><span class="hide-sm">&nbsp;&nbsp;Post</span></button>
+								<button class="btn btn-default"><span class="caret"></span></button>
 							</div>
 						</div>
 					</div>
@@ -68,8 +79,8 @@
 								<div class="thumbnail" style="text-align: center">
 									<img data-bind-src="task.thumbnail">
 									<div class="caption">
-										<input type="text" placeholder="Caption" class="caption-box" data-bind="task.caption">
-										<textarea rows="3" placeholder="Description" class="description-box" data-bind="task.description"></textarea>
+										<input type="text" placeholder="Caption" class="caption-box form-control" data-bind="task.caption">
+										<textarea rows="3" placeholder="Description" class="description-box form-control" data-bind="task.description"></textarea>
 									</div>
 								</div>
 							</div>
