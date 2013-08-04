@@ -2,7 +2,7 @@
 
 <html>
 	<head>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 		<link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/css/bootstrap.min.css">
 		<link rel="stylesheet" type="text/css" href="FortAwesome/css/font-awesome.min.css">
 		<link rel="stylesheet" type="text/css" href="page.css">
@@ -55,19 +55,20 @@
 					<div class="col-lg-12 col-sm-12 col-12">
 						<div class="navbar container" data-spy="affix">
 							<div class="navbar-form btn-group pull-left">
-								<button class="btn btn-default" disabled>0<span class="hide-sm">&nbsp;Selected</span></button>
-								<button class="btn btn-default">
+								<button class="btn btn-default" data-removeif="noTasksSelected" disabled><span data-bind="selectedTasksCount"></span><span class="hide-sm">&nbsp;Selected</span></button>
+								<button class="btn btn-default" data-removeif="noTasksSelected" data-event-click="appContext.unselectAllTasks"><i class="icon-remove"></i><span class="hide-sm">&nbsp;&nbsp;Clear</span></button>
+								<button class="btn btn-default" data-removeif="allTasksSelected" data-event-click="appContext.selectAllTasks">
 									<span class="icon-stack">
 										<i class="icon-ok" style="top:-3px"></i>
 										<i class="icon-ok" style="top:3px"></i>
 									</span>
 									<span class="hide-sm">&nbsp;Select All</span>
 								</button>
-								<button class="btn btn-default"><i class="icon-remove"></i><span class="hide-sm">&nbsp;&nbsp;Clear</span></button>
 							</div>
-							<div class="navbar-form btn-group pull-right">
-								<button class="btn btn-default"><i class="icon-arrow-right"></i><span class="hide-sm">&nbsp;&nbsp;Post</span></button>
-								<button class="btn btn-default"><span class="caret"></span></button>
+							<div class="navbar-form btn-group pull-right" data-removeif="noTasksSelected">
+								<button class="btn btn-default" data-event-click="appContext.removeSelectedTasks"><i class="icon-trash"></i><span class="hide-sm">&nbsp;&nbsp;Remove</span></button>
+								<button class="btn btn-default"><i class="icon-cloud-upload"></i><span class="hide-sm">&nbsp;&nbsp;Upload</span></button>
+								<button class="btn btn-default" data-removeif="aVideoTaskSelected"><span class="caret"></span></button>
 							</div>
 						</div>
 					</div>
@@ -76,11 +77,22 @@
 					<div class="col-lg-12 col-sm-12 col-12">
 						<div class="row">
 							<div class="col-lg-4 col-sm-6 col-12" data-foreach-task="tasks" style="padding-bottom: 30px">
-								<div class="thumbnail" style="text-align: center">
-									<img data-bind-src="task.thumbnail">
+								<div class="thumbnail task" data-addclass-selected="task.selected">
+									<div class="photoContainer" data-event-click="task.toggleSelection">
+										<img data-bind-src="task.thumbnail" data-event-load="task.imgOnLoad">
+										<div class="placeholder" data-hideif="task.previewLoaded">
+											<span class="lead"><i class="icon-picture"></i></span>
+										</div>
+										<div class="videoIcon" data-insertif="task.isVideo">
+											<i class="icon-facetime-video icon-large"></i>
+										</div>
+									</div>
 									<div class="caption">
 										<input type="text" placeholder="Caption" class="caption-box form-control" data-bind="task.caption">
 										<textarea rows="3" placeholder="Description" class="description-box form-control" data-bind="task.description"></textarea>
+									</div>
+									<div class="selectedIndicator" data-insertif="task.selected">
+										<i class="icon-ok icon-light icon-large"></i>
 									</div>
 								</div>
 							</div>

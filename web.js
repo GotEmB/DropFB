@@ -9,7 +9,7 @@ socket_io = require("socket.io");
 
 request = require("request");
 
-currentTasks = [];
+currentTasks = {};
 
 expressServer = express();
 
@@ -41,11 +41,67 @@ io = socket_io.listen(server);
 io.set("log level", 0);
 
 io.sockets.on("connection", function(socket) {
-  return socket.on("handshake", function(_arg, callback) {
-    var userId;
+  socket.on("handshake", function(_arg, callback) {
+    var userId, _name;
     userId = _arg.userId;
     return callback({
-      tasks: []
+      tasks: currentTasks[_name = socket.userId = userId] != null ? currentTasks[_name = socket.userId = userId] : currentTasks[_name] = []
+    });
+  });
+  socket.on("addTask", function(_arg, callback) {
+    var task;
+    task = _arg.task;
+    if (socket.userId == null) {
+      return callback({
+        success: false
+      });
+    }
+    if (currentTasks[socket.userId].some(function(x) {
+      return x.path === task.path;
+    })) {
+      return callback({
+        success: false
+      });
+    }
+    currentTasks[socket.userId].push(task);
+    callback({
+      success: true
+    });
+    return io.sockets.clients().filter(function(x) {
+      return x !== socket && x.userId === socket.userId;
+    }).forEach(function(x) {
+      return x.emit("addTask", {
+        task: task
+      });
+    });
+  });
+  return socket.on("removeTask", function(_arg, callback) {
+    var taskPath;
+    taskPath = _arg.taskPath;
+    if (socket.userId == null) {
+      return callback({
+        success: false
+      });
+    }
+    if (!currentTasks[socket.userId].some(function(x) {
+      return x.path === taskPath;
+    })) {
+      return callback({
+        success: false
+      });
+    }
+    currentTasks[socket.userId] = currentTasks[socket.userId].filter(function(x) {
+      return x.path !== taskPath;
+    });
+    callback({
+      success: true
+    });
+    return io.sockets.clients().filter(function(x) {
+      return x !== socket && x.userId === socket.userId;
+    }).forEach(function(x) {
+      return x.emit("removeTask", {
+        taskPath: taskPath
+      });
     });
   });
 });
