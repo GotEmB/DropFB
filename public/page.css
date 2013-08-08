@@ -1,11 +1,6 @@
 body {
   padding-top: 70px;
 }
-.btn-primary > [class^="icon-"],
-.btn-primary > [class*=" icon-"] {
-  font-size: 1.5em;
-  line-height: 0.5em;
-}
 input.form-control[type="text"].caption-box,
 textarea.form-control.description-box {
   border: none;

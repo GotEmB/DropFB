@@ -41,4 +41,16 @@ io.sockets.on "connection", (socket) ->
 		callback success: true
 		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "removeTask", taskPath: taskPath
 
+	socket.on "captionChanged", ({taskPath, caption}) ->
+		return callback success: false unless socket.userId?
+		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath
+		currentTasks[socket.userId].filter((x) -> x.path is taskPath)[0].caption = caption
+		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "captionChanged", taskPath: taskPath, caption: caption
+
+	socket.on "descriptionChanged", ({taskPath, description}) ->
+		return callback success: false unless socket.userId?
+		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath
+		currentTasks[socket.userId].filter((x) -> x.path is taskPath)[0].description = description
+		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "descriptionChanged", taskPath: taskPath, description: description
+
 server.listen (port = process.env.PORT ? 5080), -> console.log "Listening on port #{port}"

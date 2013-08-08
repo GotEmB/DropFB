@@ -75,7 +75,7 @@ io.sockets.on("connection", function(socket) {
       });
     });
   });
-  return socket.on("removeTask", function(_arg, callback) {
+  socket.on("removeTask", function(_arg, callback) {
     var taskPath;
     taskPath = _arg.taskPath;
     if (socket.userId == null) {
@@ -101,6 +101,60 @@ io.sockets.on("connection", function(socket) {
     }).forEach(function(x) {
       return x.emit("removeTask", {
         taskPath: taskPath
+      });
+    });
+  });
+  socket.on("captionChanged", function(_arg) {
+    var caption, taskPath;
+    taskPath = _arg.taskPath, caption = _arg.caption;
+    if (socket.userId == null) {
+      return callback({
+        success: false
+      });
+    }
+    if (!currentTasks[socket.userId].some(function(x) {
+      return x.path === taskPath;
+    })) {
+      return callback({
+        success: false
+      });
+    }
+    currentTasks[socket.userId].filter(function(x) {
+      return x.path === taskPath;
+    })[0].caption = caption;
+    return io.sockets.clients().filter(function(x) {
+      return x !== socket && x.userId === socket.userId;
+    }).forEach(function(x) {
+      return x.emit("captionChanged", {
+        taskPath: taskPath,
+        caption: caption
+      });
+    });
+  });
+  return socket.on("descriptionChanged", function(_arg) {
+    var description, taskPath;
+    taskPath = _arg.taskPath, description = _arg.description;
+    if (socket.userId == null) {
+      return callback({
+        success: false
+      });
+    }
+    if (!currentTasks[socket.userId].some(function(x) {
+      return x.path === taskPath;
+    })) {
+      return callback({
+        success: false
+      });
+    }
+    currentTasks[socket.userId].filter(function(x) {
+      return x.path === taskPath;
+    })[0].description = description;
+    return io.sockets.clients().filter(function(x) {
+      return x !== socket && x.userId === socket.userId;
+    }).forEach(function(x) {
+      return x.emit("descriptionChanged", {
+        taskPath: taskPath,
+        description: description
       });
     });
   });

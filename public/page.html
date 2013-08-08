@@ -42,58 +42,67 @@
 					<div class="jumbotron col-lg-8 col-offset-2">
 						<h1>Get Started</h1>
 						<p>DropFB will let you upload photos and videos from your Dropbox directly to Facebook. Login to DropFB using Facebook to get started.</p>
-						<p><button class="btn btn-primary btn-large" data-event-click="appContext.fbLogin"><i class="icon-facebook-sign"></i>&nbsp;&nbsp;Login</button></p>
+						<p><button class="btn btn-primary btn-large" data-event-click="appContext.fbLogin"><i class="icon-facebook-sign icon-large"></i>&nbsp;&nbsp;Login</button></p>
 					</div>
 				</div>
-				<div class="row" data-showif="userLoggedIn">
-					<div class="col-lg-4 col-sm-4 col-1"></div>
-					<button id="chooseFilesBtn" class="btn btn-primary btn-large col-lg-4 col-sm-4 col-10" data-event-click="appContext.dbChooseFiles"><i class="icon-dropbox"></i>&nbsp;&nbsp;Choose Files</button>
-				</div>
-				<br>
-				<div id="navbar2" class="row">
-					<div class="backdrop"></div>
-					<div class="col-lg-12 col-sm-12 col-12">
-						<div class="navbar container" data-spy="affix">
-							<div class="navbar-form btn-group pull-left">
-								<button class="btn btn-default" data-removeif="noTasksSelected" disabled><span data-bind="selectedTasksCount"></span><span class="hide-sm">&nbsp;Selected</span></button>
-								<button class="btn btn-default" data-removeif="noTasksSelected" data-event-click="appContext.unselectAllTasks"><i class="icon-remove"></i><span class="hide-sm">&nbsp;&nbsp;Clear</span></button>
-								<button class="btn btn-default" data-removeif="allTasksSelected" data-event-click="appContext.selectAllTasks">
-									<span class="icon-stack">
-										<i class="icon-ok" style="top:-3px"></i>
-										<i class="icon-ok" style="top:3px"></i>
-									</span>
-									<span class="hide-sm">&nbsp;Select All</span>
-								</button>
-							</div>
-							<div class="navbar-form btn-group pull-right" data-removeif="noTasksSelected">
-								<button class="btn btn-default" data-event-click="appContext.removeSelectedTasks"><i class="icon-trash"></i><span class="hide-sm">&nbsp;&nbsp;Remove</span></button>
-								<button class="btn btn-default"><i class="icon-cloud-upload"></i><span class="hide-sm">&nbsp;&nbsp;Upload</span></button>
-								<button class="btn btn-default" data-removeif="aVideoTaskSelected"><span class="caret"></span></button>
+				<div data-showif="userLoggedIn">
+					<div class="row">
+						<div class="col-lg-4 col-sm-4 col-1"></div>
+						<button id="chooseFilesBtn" class="btn btn-primary btn-large col-lg-4 col-sm-4 col-10" data-event-click="appContext.dbChooseFiles"><i class="icon-dropbox icon-large"></i>&nbsp;&nbsp;Choose Files</button>
+					</div>
+					<br>
+					<div id="navbar2" class="row">
+						<div class="backdrop"></div>
+						<div class="col-lg-12 col-sm-12 col-12">
+							<div class="navbar container" data-spy="affix">
+								<div class="navbar-form btn-toolbar pull-left">
+									<div class="btn-group" data-removeif="noTasksSelected">
+										<button class="btn btn-default" disabled><span data-bind="selectedTasksCount"></span><span class="hide-sm">&nbsp;Selected</span></button>
+										<button class="btn btn-default" data-event-click="appContext.unselectAllTasks"><i class="icon-remove"></i><span class="hide-sm">&nbsp;&nbsp;Clear</span></button>
+									</div>
+									<div class="btn-group" data-removeif="allTasksSelected">
+										<button class="btn btn-default" data-event-click="appContext.selectAllTasks">
+											<span class="icon-stack">
+												<i class="icon-ok" style="top:-3px"></i>
+												<i class="icon-ok" style="top:3px"></i>
+											</span>
+											<span class="hide-sm">&nbsp;Select All</span>
+										</button>
+									</div>
+								</div>
+								<div class="navbar-form btn-toolbar pull-right" data-removeif="noTasksSelected">
+									<div class="btn-group">
+										<button class="btn btn-default" data-event-click="appContext.removeSelectedTasks"><i class="icon-trash"></i><span class="hide-sm">&nbsp;&nbsp;Remove</span></button>
+									</div>
+									<div class="btn-group">
+										<button class="btn btn-default"><i class="icon-cloud-upload"></i><span class="hide-sm">&nbsp;&nbsp;Upload</span></button>
+										<button class="btn btn-default dropdown-toggle" data-toggle="dropdown" data-removeif="aVideoTaskSelected"><span class="caret"></span></button>
+										<ul class="dropdown-menu pull-right" data-removeif="aVideoTaskSelected">
+											<li data-foreach-album="albums"><a href="#" data-bind="album.name"></a></li>
+										</ul>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-				<div class="row"></div>
-					<div class="col-lg-12 col-sm-12 col-12">
-						<div class="row">
-							<div class="col-lg-4 col-sm-6 col-12" data-foreach-task="tasks" style="padding-bottom: 30px">
-								<div class="thumbnail task" data-addclass-selected="task.selected">
-									<div class="photoContainer" data-event-click="task.toggleSelection">
-										<img data-bind-src="task.thumbnail" data-event-load="task.imgOnLoad">
-										<div class="placeholder" data-hideif="task.previewLoaded">
-											<span class="lead"><i class="icon-picture"></i></span>
-										</div>
-										<div class="videoIcon" data-insertif="task.isVideo">
-											<i class="icon-facetime-video icon-large"></i>
-										</div>
+					<div class="row" style="padding: 0 10px">
+						<div class="col-lg-4 col-sm-6 col-12" data-foreach-task="tasks" style="padding-bottom: 30px">
+							<div class="thumbnail task" data-addclass-selected="task.selected">
+								<div class="photoContainer" data-event-click="task.toggleSelection">
+									<img data-bind-src="task.thumbnail" data-event-load="task.imgOnLoad">
+									<div class="placeholder" data-hideif="task.previewLoaded">
+										<span class="lead"><i class="icon-picture"></i></span>
 									</div>
-									<div class="caption">
-										<input type="text" placeholder="Caption" class="caption-box form-control" data-bind="task.caption">
-										<textarea rows="3" placeholder="Description" class="description-box form-control" data-bind="task.description"></textarea>
+									<div class="videoIcon" data-insertif="task.isVideo">
+										<i class="icon-facetime-video icon-large"></i>
 									</div>
-									<div class="selectedIndicator" data-insertif="task.selected">
-										<i class="icon-ok icon-light icon-large"></i>
-									</div>
+								</div>
+								<div class="caption">
+									<input type="text" placeholder="Caption" class="caption-box form-control" data-bind="task.caption" data-event-change="task.captionChanged">
+									<textarea rows="3" placeholder="Description" class="description-box form-control" data-bind="task.description" data-event-change="task.descriptionChanged"></textarea>
+								</div>
+								<div class="selectedIndicator" data-insertif="task.selected">
+									<i class="icon-ok icon-light icon-large"></i>
 								</div>
 							</div>
 						</div>
