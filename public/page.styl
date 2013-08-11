@@ -1,5 +1,13 @@
 @import nib
 
+@keyframes cloudPulse
+	0%
+		color rgba(255, 255, 255, 0)
+	50%
+		color white
+	100%
+		color rgba(255, 255, 255, 0)
+
 body
 	padding-top 70px
 
@@ -52,7 +60,7 @@ body
 	.hide-sm
 		display none
 
-.icon-stack
+.icon-inline.icon-stack
 	width 1em
 	height 1em
 	line-height 1em
@@ -101,6 +109,71 @@ body
 				line-height 1em
 				margin-top -0.5em
 				color #aaa
+
+		.postingIcon
+			position absolute
+			left 0
+			right 0
+			width 100%
+			height 100%
+
+			span.lead
+				position absolute
+				left 0
+				right 0
+				top 50%
+				font-size 5em
+				line-height 1em
+				margin-top -0.5em
+
+				i
+					color inherit
+
+				&:nth-of-type(1)
+					font-size 5em
+					color rgba(0, 0, 0, 0.8)
+
+				&:nth-of-type(2)
+					font-size 3em
+					animation cloudPulse 2s ease-in-out 0 infinite
+
+				&:nth-of-type(3)
+					font-size 3em
+					color white
+
+				&:nth-of-type(4), &:nth-of-type(5)
+					font-size 3em
+					color rgba(255, 255, 255, 0)
+
+			div
+				position absolute
+				top 0
+				left 0
+				width 100%
+				height 100%
+				background-color rgba(200, 200, 200, 0.5)
+
+			&.success
+
+				& > span.lead:nth-of-type(1), & > span.lead:nth-of-type(2), & > span.lead:nth-of-type(3)
+					color rgb(92, 184, 92)
+					animation none
+					transition color 250ms
+
+				& > span.lead:nth-of-type(4)
+					color rgb(255, 255, 255)
+					transition color 250ms
+
+			&.failure
+
+				& > span.lead:nth-of-type(1), & > span.lead:nth-of-type(2), & > span.lead:nth-of-type(3)
+					color rgb(217, 83, 79)
+					animation none
+					transition color 250ms
+
+				& > span.lead:nth-of-type(5)
+					color rgb(255, 255, 255)
+					transition color 250ms
 
 	.selectedIndicator
 		position absolute

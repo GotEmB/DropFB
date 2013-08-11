@@ -32,6 +32,7 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 			super
 			@set "selected", false
 			@set "previewLoaded", false
+			@set "posting", false
 		toggleSelection: ->
 			@set "selected", not @get "selected"
 		imgOnLoad: ->
@@ -58,7 +59,7 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 				@fbLoginStatusChanged.inProgress = true
 				return if fbStatus is "connected" and @get "userLoggedIn"
 				FB.api "/me/permissions", ({data}) =>
-					fbPermissions = data[0] ? {}
+					fbPermissions = data?[0] ? {}
 					if fbStatus is "connected" and fbAuthResponse? and constants.fbPermissions.every((x) -> fbPermissions[x] is 1)
 						@socket = io.connect()
 						@socket.on "connect", =>
@@ -106,9 +107,12 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 			@get("selectedTasks").forEach (task) =>
 				@socket.emit "removeTask", taskPath: task.get("path"), ({success}) =>
 					@get("tasks").remove task if success
-		uploadTask: ->
+		uploadTasks: ->
 			@get("selectedTasks").forEach (task) =>
-				@socket.emit "uploadTask", fbAccessToken: FB.getAuthResponse.accessToken, taskPath: task.get "path" #...
+				task.set "posting", true
+				@socket.emit "uploadTask", fbAccessToken: FB.getAuthResponse().accessToken, taskPath: task.get("path"), ({success}) =>
+					task.set "posting_success", true if success
+					task.set "posting_failure", true unless success
 
 	class DropFB extends Batman.App
 		@appContext: appContext = new AppContext

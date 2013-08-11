@@ -108,16 +108,12 @@ io.sockets.on("connection", function(socket) {
     var caption, taskPath;
     taskPath = _arg.taskPath, caption = _arg.caption;
     if (socket.userId == null) {
-      return callback({
-        success: false
-      });
+      return;
     }
     if (!currentTasks[socket.userId].some(function(x) {
       return x.path === taskPath;
     })) {
-      return callback({
-        success: false
-      });
+      return;
     }
     currentTasks[socket.userId].filter(function(x) {
       return x.path === taskPath;
@@ -131,9 +127,32 @@ io.sockets.on("connection", function(socket) {
       });
     });
   });
-  return socket.on("descriptionChanged", function(_arg) {
+  socket.on("descriptionChanged", function(_arg) {
     var description, taskPath;
     taskPath = _arg.taskPath, description = _arg.description;
+    if (socket.userId == null) {
+      return;
+    }
+    if (!currentTasks[socket.userId].some(function(x) {
+      return x.path === taskPath;
+    })) {
+      return;
+    }
+    currentTasks[socket.userId].filter(function(x) {
+      return x.path === taskPath;
+    })[0].description = description;
+    return io.sockets.clients().filter(function(x) {
+      return x !== socket && x.userId === socket.userId;
+    }).forEach(function(x) {
+      return x.emit("descriptionChanged", {
+        taskPath: taskPath,
+        description: description
+      });
+    });
+  });
+  return socket.on("uploadTask", function(_arg, callback) {
+    var fbAccessToken, taskPath;
+    taskPath = _arg.taskPath, fbAccessToken = _arg.fbAccessToken;
     if (socket.userId == null) {
       return callback({
         success: false
@@ -146,15 +165,27 @@ io.sockets.on("connection", function(socket) {
         success: false
       });
     }
-    currentTasks[socket.userId].filter(function(x) {
-      return x.path === taskPath;
-    })[0].description = description;
-    return io.sockets.clients().filter(function(x) {
-      return x !== socket && x.userId === socket.userId;
-    }).forEach(function(x) {
-      return x.emit("descriptionChanged", {
-        taskPath: taskPath,
-        description: description
+    return request.post("https://graph.facebook.com/" + socket.userId + "/photos", {
+      form: {
+        access_token: fbAccessToken,
+        url: taskPath
+      }
+    }, function(error, response, body) {
+      console.log({
+        access_token: fbAccessToken,
+        request: response.request,
+        body: body
+      });
+      callback({
+        success: true
+      });
+      return io.sockets.clients().filter(function(x) {
+        return x !== socket && x.userId === socket.userId;
+      }).forEach(function(x) {
+        return x.emit("uploadedTask", {
+          taskPath: taskPath,
+          success: true
+        });
       });
     });
   });

@@ -42,15 +42,23 @@ io.sockets.on "connection", (socket) ->
 		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "removeTask", taskPath: taskPath
 
 	socket.on "captionChanged", ({taskPath, caption}) ->
-		return callback success: false unless socket.userId?
-		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath
+		return unless socket.userId?
+		return unless currentTasks[socket.userId].some (x) -> x.path is taskPath
 		currentTasks[socket.userId].filter((x) -> x.path is taskPath)[0].caption = caption
 		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "captionChanged", taskPath: taskPath, caption: caption
 
 	socket.on "descriptionChanged", ({taskPath, description}) ->
-		return callback success: false unless socket.userId?
-		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath
+		return unless socket.userId?
+		return unless currentTasks[socket.userId].some (x) -> x.path is taskPath
 		currentTasks[socket.userId].filter((x) -> x.path is taskPath)[0].description = description
 		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "descriptionChanged", taskPath: taskPath, description: description
+
+	socket.on "uploadTask", ({taskPath, fbAccessToken}, callback) ->
+		return callback success: false unless socket.userId?
+		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath
+		request.post "https://graph.facebook.com/#{socket.userId}/photos", form: access_token: fbAccessToken, url: taskPath, (error, response, body) ->
+			console.log access_token: fbAccessToken, request: response.request, body: body
+			callback success: true
+			io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "uploadedTask", taskPath: taskPath, success: true
 
 server.listen (port = process.env.PORT ? 5080), -> console.log "Listening on port #{port}"

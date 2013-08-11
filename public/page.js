@@ -70,6 +70,7 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
       Task.__super__.constructor.apply(this, arguments);
       this.set("selected", false);
       this.set("previewLoaded", false);
+      this.set("posting", false);
     }
 
     Task.prototype.toggleSelection = function() {
@@ -153,7 +154,7 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
         return FB.api("/me/permissions", function(_arg1) {
           var data, fbPermissions, _ref1, _ref2;
           data = _arg1.data;
-          fbPermissions = (_ref1 = data[0]) != null ? _ref1 : {};
+          fbPermissions = (_ref1 = data != null ? data[0] : void 0) != null ? _ref1 : {};
           if (fbStatus === "connected" && (fbAuthResponse != null) && constants.fbPermissions.every(function(x) {
             return fbPermissions[x] === 1;
           })) {
@@ -315,12 +316,22 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
       });
     };
 
-    AppContext.prototype.uploadTask = function() {
+    AppContext.prototype.uploadTasks = function() {
       var _this = this;
       return this.get("selectedTasks").forEach(function(task) {
+        task.set("posting", true);
         return _this.socket.emit("uploadTask", {
-          fbAccessToken: FB.getAuthResponse.accessToken,
+          fbAccessToken: FB.getAuthResponse().accessToken,
           taskPath: task.get("path")
+        }, function(_arg) {
+          var success;
+          success = _arg.success;
+          if (success) {
+            task.set("posting_success", true);
+          }
+          if (!success) {
+            return task.set("posting_failure", true);
+          }
         });
       });
     };

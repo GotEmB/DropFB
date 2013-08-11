@@ -61,7 +61,7 @@ textarea.form-control.description-box {
     display: none;
   }
 }
-.icon-stack {
+.icon-inline.icon-stack {
   width: 1em;
   height: 1em;
   line-height: 1em;
@@ -115,6 +115,100 @@ textarea.form-control.description-box {
   margin-top: -0.5em;
   color: #aaa;
 }
+.thumbnail.task .photoContainer .postingIcon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+}
+.thumbnail.task .photoContainer .postingIcon span.lead {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  font-size: 5em;
+  line-height: 1em;
+  margin-top: -0.5em;
+}
+.thumbnail.task .photoContainer .postingIcon span.lead i {
+  color: inherit;
+}
+.thumbnail.task .photoContainer .postingIcon span.lead:nth-of-type(1) {
+  font-size: 5em;
+  color: rgba(0,0,0,0.8);
+}
+.thumbnail.task .photoContainer .postingIcon span.lead:nth-of-type(2) {
+  font-size: 3em;
+  -webkit-animation: cloudPulse 2s ease-in-out 0 infinite;
+  -moz-animation: cloudPulse 2s ease-in-out 0 infinite;
+  -o-animation: cloudPulse 2s ease-in-out 0 infinite;
+  -ms-animation: cloudPulse 2s ease-in-out 0 infinite;
+  animation: cloudPulse 2s ease-in-out 0 infinite;
+}
+.thumbnail.task .photoContainer .postingIcon span.lead:nth-of-type(3) {
+  font-size: 3em;
+  color: #fff;
+}
+.thumbnail.task .photoContainer .postingIcon span.lead:nth-of-type(4),
+.thumbnail.task .photoContainer .postingIcon span.lead:nth-of-type(5) {
+  font-size: 3em;
+  color: rgba(255,255,255,0);
+}
+.thumbnail.task .photoContainer .postingIcon div {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(200,200,200,0.5);
+}
+.thumbnail.task .photoContainer .postingIcon.success > span.lead:nth-of-type(1),
+.thumbnail.task .photoContainer .postingIcon.success > span.lead:nth-of-type(2),
+.thumbnail.task .photoContainer .postingIcon.success > span.lead:nth-of-type(3) {
+  color: #5cb85c;
+  -webkit-animation: none;
+  -moz-animation: none;
+  -o-animation: none;
+  -ms-animation: none;
+  animation: none;
+  -webkit-transition: color 250ms;
+  -moz-transition: color 250ms;
+  -o-transition: color 250ms;
+  -ms-transition: color 250ms;
+  transition: color 250ms;
+}
+.thumbnail.task .photoContainer .postingIcon.success > span.lead:nth-of-type(4) {
+  color: #fff;
+  -webkit-transition: color 250ms;
+  -moz-transition: color 250ms;
+  -o-transition: color 250ms;
+  -ms-transition: color 250ms;
+  transition: color 250ms;
+}
+.thumbnail.task .photoContainer .postingIcon.failure > span.lead:nth-of-type(1),
+.thumbnail.task .photoContainer .postingIcon.failure > span.lead:nth-of-type(2),
+.thumbnail.task .photoContainer .postingIcon.failure > span.lead:nth-of-type(3) {
+  color: #d9534f;
+  -webkit-animation: none;
+  -moz-animation: none;
+  -o-animation: none;
+  -ms-animation: none;
+  animation: none;
+  -webkit-transition: color 250ms;
+  -moz-transition: color 250ms;
+  -o-transition: color 250ms;
+  -ms-transition: color 250ms;
+  transition: color 250ms;
+}
+.thumbnail.task .photoContainer .postingIcon.failure > span.lead:nth-of-type(5) {
+  color: #fff;
+  -webkit-transition: color 250ms;
+  -moz-transition: color 250ms;
+  -o-transition: color 250ms;
+  -ms-transition: color 250ms;
+  transition: color 250ms;
+}
 .thumbnail.task .selectedIndicator {
   position: absolute;
   background-color: #428bca;
@@ -141,4 +235,69 @@ textarea.form-control.description-box {
   background-color: rgba(0,0,0,0.75);
   -webkit-border-radius: 4px;
   border-radius: 4px;
+}
+@-moz-keyframes cloudPulse {
+  0% {
+    color: rgba(255,255,255,0);
+  }
+
+  50% {
+    color: #fff;
+  }
+
+  100% {
+    color: rgba(255,255,255,0);
+  }
+}
+@-webkit-keyframes cloudPulse {
+  0% {
+    color: rgba(255,255,255,0);
+  }
+
+  50% {
+    color: #fff;
+  }
+
+  100% {
+    color: rgba(255,255,255,0);
+  }
+}
+@-o-keyframes cloudPulse {
+  0% {
+    color: rgba(255,255,255,0);
+  }
+
+  50% {
+    color: #fff;
+  }
+
+  100% {
+    color: rgba(255,255,255,0);
+  }
+}
+@-ms-keyframes cloudPulse {
+  0% {
+    color: rgba(255,255,255,0);
+  }
+
+  50% {
+    color: #fff;
+  }
+
+  100% {
+    color: rgba(255,255,255,0);
+  }
+}
+@keyframes cloudPulse {
+  0% {
+    color: rgba(255,255,255,0);
+  }
+
+  50% {
+    color: #fff;
+  }
+
+  100% {
+    color: rgba(255,255,255,0);
+  }
 }
