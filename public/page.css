@@ -76,8 +76,11 @@ textarea.form-control.description-box {
   transition: margin 0, border-width 0;
   position: relative;
 }
-.thumbnail.task:hover {
+.thumbnail.task.selectable:hover {
   border-color: #428bca;
+}
+.thumbnail.task.selectable:hover .photoContainer {
+  cursor: pointer;
 }
 .thumbnail.task.selected {
   border-color: #428bca;
@@ -88,7 +91,6 @@ textarea.form-control.description-box {
   position: relative;
   width: 100%;
   padding-bottom: 75%;
-  cursor: pointer;
 }
 .thumbnail.task .photoContainer img {
   position: absolute;
@@ -235,6 +237,15 @@ textarea.form-control.description-box {
   background-color: rgba(0,0,0,0.75);
   -webkit-border-radius: 4px;
   border-radius: 4px;
+}
+.navbar .btn-toolbar {
+  margin: 7px 0;
+}
+.navbar .btn-toolbar.pull-left {
+  margin-left: 15px;
+}
+.navbar .btn-toolbar.pull-right {
+  margin-right: 15px;
 }
 @-moz-keyframes cloudPulse {
   0% {

@@ -36,14 +36,14 @@ io.sockets.on "connection", (socket) ->
 
 	socket.on "removeTask", ({taskPath}, callback) ->
 		return callback success: false unless socket.userId?
-		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath
+		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath and x.status isnt "posting"
 		currentTasks[socket.userId] = currentTasks[socket.userId].filter (x) -> x.path isnt taskPath
 		callback success: true
 		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "removeTask", taskPath: taskPath
 
 	socket.on "captionChanged", ({taskPath, caption}) ->
 		return unless socket.userId?
-		return unless currentTasks[socket.userId].some (x) -> x.path is taskPath
+		return unless currentTasks[socket.userId].some (x) -> x.path is taskPath and x.status not in ["posting", "post_success", "post_failure"]
 		currentTasks[socket.userId].filter((x) -> x.path is taskPath)[0].caption = caption
 		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "captionChanged", taskPath: taskPath, caption: caption
 
@@ -53,12 +53,20 @@ io.sockets.on "connection", (socket) ->
 		currentTasks[socket.userId].filter((x) -> x.path is taskPath)[0].description = description
 		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "descriptionChanged", taskPath: taskPath, description: description
 
-	socket.on "uploadTask", ({taskPath, fbAccessToken}, callback) ->
+	socket.on "uploadTask", ({taskPath, fbAccessToken, albumId}, callback) ->
 		return callback success: false unless socket.userId?
 		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath
-		request.post "https://graph.facebook.com/#{socket.userId}/photos", form: access_token: fbAccessToken, url: taskPath, (error, response, body) ->
-			console.log access_token: fbAccessToken, request: response.request, body: body
-			callback success: true
-			io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "uploadedTask", taskPath: taskPath, success: true
+		task = currentTasks[socket.userId].filter((x) -> x.path is taskPath)[0]
+		task.status = "posting"
+		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "posting", taskPath: taskPath
+		request.post "https://graph.facebook.com/#{albumId ? socket.userId}/photos", form: access_token: fbAccessToken, url: taskPath, (error, response, body) ->
+			callback success: not (error? or body.error?)
+			task.status = unless error? or body.error? then "post_success" else "post_failure"
+			io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "uploadedTask", taskPath: taskPath, success: not (error? or body.error?)
+
+	socket.on "failureAck", ({taskPath}, callback) ->
+		return callback success: false unless socket.userId?
+		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath
+		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "failureAck", taskPath: taskPath
 
 server.listen (port = process.env.PORT ? 5080), -> console.log "Listening on port #{port}"

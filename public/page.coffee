@@ -2,7 +2,7 @@ require.config
 	paths:
 		jquery: "jquery/jquery-2.0.3.min"
 		batman: "batmanjs/batman"
-		bootstrap: "//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/js/bootstrap.min"
+		bootstrap: "//netdna.bootstrapcdn.com/bootstrap/3.0.0-wip/js/bootstrap.min"
 		facebook: "//connect.facebook.net/en_US/all"
 		dropbox: "//dropbox.com/static/api/1/dropins"
 		socket_io: "socket.io/socket.io"
@@ -23,18 +23,37 @@ define "Batman", ["batman"], (Batman) -> Batman.DOM.readers.batmantarget = Batma
 
 require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], ($, Batman, FB, Dropbox, io) ->
 
+	class Album extends Batman.Model
+		uploadTasks: ->
+			apsocket.get("selectedTasks").forEach (task) =>
+				task.set "status", "posting"
+				apsocket.socket.emit "uploadTask", fbAccessToken: FB.getAuthResponse().accessToken, taskPath: task.get("path"), albumId: @get("name"), ({success}) =>
+					task.set "status", if success then "post_success" else "post_failure"
+
 	class User extends Batman.Model
 
 	class Task extends Batman.Model
-		@encode "path", "thumbnail", "type", "caption", "description"
+		@encode "path", "thumbnail", "type", "caption", "description", "status"
 		@accessor "isVideo", -> @get("type") is "video"
+		@accessor "selectable", -> @get("status") not in ["posting", "post_success", "post_failure"]
+		@accessor "posting", -> @get("status") is "posting"
+		@accessor "post_success", -> @get("status") is "post_success"
+		@accessor "post_failure", -> @get("status") is "post_failure"
+		@accessor "showStatus", -> @get("status")?
 		constructor: ->
 			super
 			@set "selected", false
 			@set "previewLoaded", false
-			@set "posting", false
+			@observe "selectable", (value) -> @set "selected", false unless value
 		toggleSelection: ->
-			@set "selected", not @get "selected"
+			if @get "selectable"
+				@set "selected", not @get "selected"
+			else if @get "post_success"
+				appContext.socket.emit "removeTask", taskPath: @get("path"), ({success}) =>
+					appContext.get("tasks").remove @ if success
+			else if @get "post_failure"
+				appContext.socket.emit "failureAck", taskPath: @get("path"), ({success}) =>
+					@unset "status"
 		imgOnLoad: ->
 			@set "previewLoaded", true
 		captionChanged: ->
@@ -65,7 +84,7 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 						@socket.on "connect", =>
 							FB.api "/me", ({name}) =>
 								FB.api "/me/albums?fields=name,can_upload", ({data: albums}) =>
-									@set "albums", new Batman.Set albums.filter((x) -> x.can_upload).map((x) -> id: x.id, name: x.name)...
+									@set "albums", new Batman.Set albums.filter((x) -> x.can_upload).map((x) -> new Album id: x.id, name: x.name)...
 								@socket.emit "handshake", userId: fbAuthResponse.userID, ({tasks}) =>
 									@set "currentUser", new User name: name, userId: fbAuthResponse.userID
 									@set "tasks", new Batman.Set
@@ -80,6 +99,12 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 							@get("tasks").find((x) -> x.get("path") is taskPath)?.set "caption", caption
 						@socket.on "descriptionChanged", ({taskPath, description}) =>
 							@get("tasks").find((x) -> x.get("path") is taskPath)?.set "description", description if taskPath is @get "path"
+						@socket.on "posting", ({taskPath}) =>
+							@get("tasks").find((x) -> x.get("path") is taskPath)?.set "status", "posting"
+						@socket.on "uploadedTask", ({taskPath, success}) =>
+							@get("tasks").find((x) -> x.get("path") is taskPath)?.set "status", if success then "post_success" else "post_failure"
+						@socket.on "failureAck", ({taskPath}) =>
+							@get("tasks").find((x) -> x.get("path") is taskPath)?.unset "status"
 					else
 						@unset "currentUser"
 						@socket?.disconnect()
@@ -109,10 +134,11 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 					@get("tasks").remove task if success
 		uploadTasks: ->
 			@get("selectedTasks").forEach (task) =>
-				task.set "posting", true
+				task.set "status", "posting"
 				@socket.emit "uploadTask", fbAccessToken: FB.getAuthResponse().accessToken, taskPath: task.get("path"), ({success}) =>
-					task.set "posting_success", true if success
-					task.set "posting_failure", true unless success
+					task.set "status", if success then "post_success" else "post_failure"
+		newAlbum: ->
+			$("#newAlbumDialog").modal()
 
 	class DropFB extends Batman.App
 		@appContext: appContext = new AppContext
@@ -120,4 +146,4 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 	DropFB.run()
 
 	$ ->
-		$("#navbar2").affix offset: top: 75
+		$("#navbar2").affix offset: top: 65

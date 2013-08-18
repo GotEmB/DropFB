@@ -8,7 +8,7 @@ require.config({
   paths: {
     jquery: "jquery/jquery-2.0.3.min",
     batman: "batmanjs/batman",
-    bootstrap: "//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/js/bootstrap.min",
+    bootstrap: "//netdna.bootstrapcdn.com/bootstrap/3.0.0-wip/js/bootstrap.min",
     facebook: "//connect.facebook.net/en_US/all",
     dropbox: "//dropbox.com/static/api/1/dropins",
     socket_io: "socket.io/socket.io"
@@ -45,13 +45,40 @@ define("Batman", ["batman"], function(Batman) {
 });
 
 require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], function($, Batman, FB, Dropbox, io) {
-  var AppContext, DropFB, Task, User, _ref, _ref1;
+  var Album, AppContext, DropFB, Task, User, _ref, _ref1, _ref2;
+  Album = (function(_super) {
+    __extends(Album, _super);
+
+    function Album() {
+      _ref = Album.__super__.constructor.apply(this, arguments);
+      return _ref;
+    }
+
+    Album.prototype.uploadTasks = function() {
+      var _this = this;
+      return apsocket.get("selectedTasks").forEach(function(task) {
+        task.set("status", "posting");
+        return apsocket.socket.emit("uploadTask", {
+          fbAccessToken: FB.getAuthResponse().accessToken,
+          taskPath: task.get("path"),
+          albumId: _this.get("name")
+        }, function(_arg) {
+          var success;
+          success = _arg.success;
+          return task.set("status", success ? "post_success" : "post_failure");
+        });
+      });
+    };
+
+    return Album;
+
+  })(Batman.Model);
   User = (function(_super) {
     __extends(User, _super);
 
     function User() {
-      _ref = User.__super__.constructor.apply(this, arguments);
-      return _ref;
+      _ref1 = User.__super__.constructor.apply(this, arguments);
+      return _ref1;
     }
 
     return User;
@@ -60,21 +87,67 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
   Task = (function(_super) {
     __extends(Task, _super);
 
-    Task.encode("path", "thumbnail", "type", "caption", "description");
+    Task.encode("path", "thumbnail", "type", "caption", "description", "status");
 
     Task.accessor("isVideo", function() {
       return this.get("type") === "video";
+    });
+
+    Task.accessor("selectable", function() {
+      var _ref2;
+      return (_ref2 = this.get("status")) !== "posting" && _ref2 !== "post_success" && _ref2 !== "post_failure";
+    });
+
+    Task.accessor("posting", function() {
+      return this.get("status") === "posting";
+    });
+
+    Task.accessor("post_success", function() {
+      return this.get("status") === "post_success";
+    });
+
+    Task.accessor("post_failure", function() {
+      return this.get("status") === "post_failure";
+    });
+
+    Task.accessor("showStatus", function() {
+      return this.get("status") != null;
     });
 
     function Task() {
       Task.__super__.constructor.apply(this, arguments);
       this.set("selected", false);
       this.set("previewLoaded", false);
-      this.set("posting", false);
+      this.observe("selectable", function(value) {
+        if (!value) {
+          return this.set("selected", false);
+        }
+      });
     }
 
     Task.prototype.toggleSelection = function() {
-      return this.set("selected", !this.get("selected"));
+      var _this = this;
+      if (this.get("selectable")) {
+        return this.set("selected", !this.get("selected"));
+      } else if (this.get("post_success")) {
+        return appContext.socket.emit("removeTask", {
+          taskPath: this.get("path")
+        }, function(_arg) {
+          var success;
+          success = _arg.success;
+          if (success) {
+            return appContext.get("tasks").remove(_this);
+          }
+        });
+      } else if (this.get("post_failure")) {
+        return appContext.socket.emit("failureAck", {
+          taskPath: this.get("path")
+        }, function(_arg) {
+          var success;
+          success = _arg.success;
+          return _this.unset("status");
+        });
+      }
     };
 
     Task.prototype.imgOnLoad = function() {
@@ -106,15 +179,15 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
     });
 
     AppContext.accessor("selectedTasks", function() {
-      var _ref1;
-      return (_ref1 = this.get("tasks")) != null ? _ref1.filter(function(x) {
+      var _ref2;
+      return (_ref2 = this.get("tasks")) != null ? _ref2.filter(function(x) {
         return x.get("selected");
       }) : void 0;
     });
 
     AppContext.accessor("selectedTasksCount", function() {
-      var _ref1, _ref2;
-      return (_ref1 = (_ref2 = this.get("selectedTasks")) != null ? _ref2.length : void 0) != null ? _ref1 : 0;
+      var _ref2, _ref3;
+      return (_ref2 = (_ref3 = this.get("selectedTasks")) != null ? _ref3.length : void 0) != null ? _ref2 : 0;
     });
 
     AppContext.accessor("noTasksSelected", function() {
@@ -126,8 +199,8 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
     });
 
     AppContext.accessor("aVideoTaskSelected", function() {
-      var _ref1;
-      return (_ref1 = this.get("selectedTasks")) != null ? _ref1.some(function(x) {
+      var _ref2;
+      return (_ref2 = this.get("selectedTasks")) != null ? _ref2.some(function(x) {
         return x.get("isVideo");
       }) : void 0;
     });
@@ -152,9 +225,9 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
           return;
         }
         return FB.api("/me/permissions", function(_arg1) {
-          var data, fbPermissions, _ref1, _ref2;
+          var data, fbPermissions, _ref2, _ref3;
           data = _arg1.data;
-          fbPermissions = (_ref1 = data != null ? data[0] : void 0) != null ? _ref1 : {};
+          fbPermissions = (_ref2 = data != null ? data[0] : void 0) != null ? _ref2 : {};
           if (fbStatus === "connected" && (fbAuthResponse != null) && constants.fbPermissions.every(function(x) {
             return fbPermissions[x] === 1;
           })) {
@@ -173,23 +246,23 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
                   })(Batman.Set, albums.filter(function(x) {
                     return x.can_upload;
                   }).map(function(x) {
-                    return {
+                    return new Album({
                       id: x.id,
                       name: x.name
-                    };
+                    });
                   }), function(){}));
                 });
                 return _this.socket.emit("handshake", {
                   userId: fbAuthResponse.userID
                 }, function(_arg3) {
-                  var task, tasks, _ref2;
+                  var task, tasks, _ref3;
                   tasks = _arg3.tasks;
                   _this.set("currentUser", new User({
                     name: name,
                     userId: fbAuthResponse.userID
                   }));
                   _this.set("tasks", new Batman.Set);
-                  (_ref2 = _this.get("tasks")).add.apply(_ref2, (function() {
+                  (_ref3 = _this.get("tasks")).add.apply(_ref3, (function() {
                     var _i, _len, _results;
                     _results = [];
                     for (_i = 0, _len = tasks.length; _i < _len; _i++) {
@@ -216,25 +289,46 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
               }));
             });
             _this.socket.on("captionChanged", function(_arg2) {
-              var caption, taskPath, _ref2;
+              var caption, taskPath, _ref3;
               taskPath = _arg2.taskPath, caption = _arg2.caption;
-              return (_ref2 = _this.get("tasks").find(function(x) {
+              return (_ref3 = _this.get("tasks").find(function(x) {
                 return x.get("path") === taskPath;
-              })) != null ? _ref2.set("caption", caption) : void 0;
+              })) != null ? _ref3.set("caption", caption) : void 0;
             });
-            return _this.socket.on("descriptionChanged", function(_arg2) {
-              var description, taskPath, _ref2;
+            _this.socket.on("descriptionChanged", function(_arg2) {
+              var description, taskPath, _ref3;
               taskPath = _arg2.taskPath, description = _arg2.description;
               if (taskPath === _this.get("path")) {
-                return (_ref2 = _this.get("tasks").find(function(x) {
+                return (_ref3 = _this.get("tasks").find(function(x) {
                   return x.get("path") === taskPath;
-                })) != null ? _ref2.set("description", description) : void 0;
+                })) != null ? _ref3.set("description", description) : void 0;
               }
+            });
+            _this.socket.on("posting", function(_arg2) {
+              var taskPath, _ref3;
+              taskPath = _arg2.taskPath;
+              return (_ref3 = _this.get("tasks").find(function(x) {
+                return x.get("path") === taskPath;
+              })) != null ? _ref3.set("status", "posting") : void 0;
+            });
+            _this.socket.on("uploadedTask", function(_arg2) {
+              var success, taskPath, _ref3;
+              taskPath = _arg2.taskPath, success = _arg2.success;
+              return (_ref3 = _this.get("tasks").find(function(x) {
+                return x.get("path") === taskPath;
+              })) != null ? _ref3.set("status", success ? "post_success" : "post_failure") : void 0;
+            });
+            return _this.socket.on("failureAck", function(_arg2) {
+              var taskPath, _ref3;
+              taskPath = _arg2.taskPath;
+              return (_ref3 = _this.get("tasks").find(function(x) {
+                return x.get("path") === taskPath;
+              })) != null ? _ref3.unset("status") : void 0;
             });
           } else {
             _this.unset("currentUser");
-            if ((_ref2 = _this.socket) != null) {
-              _ref2.disconnect();
+            if ((_ref3 = _this.socket) != null) {
+              _ref3.disconnect();
             }
             _this.set("pageLoading", false);
             _this.unset("tasks");
@@ -258,19 +352,19 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
         linkType: "direct",
         multiselect: true,
         success: function(files) {
-          var file, _i, _len, _ref1, _results;
+          var file, _i, _len, _ref2, _results;
           _results = [];
           for (_i = 0, _len = files.length; _i < _len; _i++) {
             file = files[_i];
-            if (((_ref1 = JSON.stringify(file.thumbnails)) !== (void 0) && _ref1 !== "null" && _ref1 !== "{}") && file.bytes < 1 << 30 && (_this.get("tasks").find(function(x) {
+            if (((_ref2 = JSON.stringify(file.thumbnails)) !== (void 0) && _ref2 !== "null" && _ref2 !== "{}") && file.bytes < 1 << 30 && (_this.get("tasks").find(function(x) {
               return x.get("path") === file.link;
             }) == null)) {
               _results.push((function(file) {
-                var task, _ref2;
+                var task, _ref3;
                 task = new Task({
                   path: file.link,
                   thumbnail: file.thumbnails["640x480"],
-                  type: (_ref2 = file.name.toLowerCase().match(/[a-z0-9]+$/g)[0], __indexOf.call(constants.videoFormats, _ref2) >= 0) ? "video" : "photo"
+                  type: (_ref3 = file.name.toLowerCase().match(/[a-z0-9]+$/g)[0], __indexOf.call(constants.videoFormats, _ref3) >= 0) ? "video" : "photo"
                 });
                 return _this.socket.emit("addTask", {
                   task: task.toJSON()
@@ -319,21 +413,20 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
     AppContext.prototype.uploadTasks = function() {
       var _this = this;
       return this.get("selectedTasks").forEach(function(task) {
-        task.set("posting", true);
+        task.set("status", "posting");
         return _this.socket.emit("uploadTask", {
           fbAccessToken: FB.getAuthResponse().accessToken,
           taskPath: task.get("path")
         }, function(_arg) {
           var success;
           success = _arg.success;
-          if (success) {
-            task.set("posting_success", true);
-          }
-          if (!success) {
-            return task.set("posting_failure", true);
-          }
+          return task.set("status", success ? "post_success" : "post_failure");
         });
       });
+    };
+
+    AppContext.prototype.newAlbum = function() {
+      return $("#newAlbumDialog").modal();
     };
 
     return AppContext;
@@ -343,8 +436,8 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
     __extends(DropFB, _super);
 
     function DropFB() {
-      _ref1 = DropFB.__super__.constructor.apply(this, arguments);
-      return _ref1;
+      _ref2 = DropFB.__super__.constructor.apply(this, arguments);
+      return _ref2;
     }
 
     DropFB.appContext = appContext = new AppContext;
@@ -356,7 +449,7 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
   return $(function() {
     return $("#navbar2").affix({
       offset: {
-        top: 75
+        top: 65
       }
     });
   });

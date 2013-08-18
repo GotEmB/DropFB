@@ -3,33 +3,33 @@
 <html>
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-		<link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/css/bootstrap.min.css">
+		<link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-wip/css/bootstrap.min.css">
 		<link rel="stylesheet" type="text/css" href="FortAwesome/css/font-awesome.min.css">
 		<link rel="stylesheet" type="text/css" href="page.css">
 		<script type="text/javascript" src="requirejs/require.js" data-main="page"></script>
 		<title>DropFB</title>
 	</head>
 	<body data-context="appContext">
-		<div class="navbar navbar-fixed-top navbar-inverse">
-			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-			</button>
+		<nav class="navbar navbar-fixed-top navbar-inverse">
 			<div class="container">
-				<a class="navbar-brand" href="#">DropFB</a>
-				<div class="nav-collapse collapse navbar-responsive-collapse">
-					<div class="nav navbar-nav pull-right">
-						<p class="navbar-text" data-showif="userLoggedIn" data-bind="currentUser.name" style="display: none"></p>
-					</div>
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="#">DropFB</a>
+				</div>
+				<div class="navbar-collapse collapse navbar-responsive-collapse">
+					<p class="navbar-text navbar-right" data-showif="userLoggedIn" data-bind="currentUser.name" style="display: none"></p>
 				</div>
 			</div>
-		</div>
+		</nav>
 		<div class="container">
 			<div data-showif="pageLoading">
 				<div class="row">
-					<div class="col-lg-4 col-sm-3 col-1"></div>
-					<div class="well col-lg-4 col-sm-6 col-10">
+					<div class="col-lg-4 col-sm-3 col-xs-1"></div>
+					<div class="well col-lg-4 col-sm-6 col-xs-10">
 						<span class="lead">Please Wait...</span>
 						<div class="progress progress-striped active" style="margin-bottom: 4px; margin-top: 4px">
 							<div class="progress-bar" style="width: 100%"></div>
@@ -47,15 +47,15 @@
 				</div>
 				<div data-showif="userLoggedIn">
 					<div class="row">
-						<div class="col-lg-4 col-sm-4 col-1"></div>
-						<button id="chooseFilesBtn" class="btn btn-primary btn-large col-lg-4 col-sm-4 col-10" data-event-click="appContext.dbChooseFiles"><i class="icon-dropbox icon-large"></i>&nbsp;&nbsp;Choose Files</button>
+						<div class="col-lg-4 col-md-4 col-sm-3 col-xs-1"></div>
+						<button id="chooseFilesBtn" class="btn btn-primary btn-lg col-lg-4 col-md-4 col-sm-6 col-xs-10" data-event-click="appContext.dbChooseFiles"><i class="icon-dropbox icon-large"></i>&nbsp;&nbsp;Choose Files</button>
 					</div>
 					<br>
 					<div id="navbar2" class="row">
 						<div class="backdrop"></div>
-						<div class="col-lg-12 col-sm-12 col-12">
-							<div class="navbar container" data-spy="affix">
-								<div class="navbar-form btn-toolbar pull-left">
+						<div class="col-lg-12 col-sm-12 col-xs-12">
+							<nav class="navbar container" data-spy="affix">
+								<div class="btn-toolbar pull-left">
 									<div class="btn-group" data-removeif="noTasksSelected">
 										<button class="btn btn-default" disabled><span data-bind="selectedTasksCount"></span><span class="hide-sm">&nbsp;Selected</span></button>
 										<button class="btn btn-default" data-event-click="appContext.unselectAllTasks"><i class="icon-remove"></i><span class="hide-sm">&nbsp;&nbsp;Clear</span></button>
@@ -70,7 +70,7 @@
 										</button>
 									</div>
 								</div>
-								<div class="navbar-form btn-toolbar pull-right" data-removeif="noTasksSelected">
+								<div class="btn-toolbar pull-right" data-removeif="noTasksSelected">
 									<div class="btn-group">
 										<button class="btn btn-default" data-event-click="appContext.removeSelectedTasks"><i class="icon-trash"></i><span class="hide-sm">&nbsp;&nbsp;Remove</span></button>
 									</div>
@@ -78,16 +78,18 @@
 										<button class="btn btn-default" data-event-click="appContext.uploadTasks"><i class="icon-cloud-upload"></i><span class="hide-sm">&nbsp;&nbsp;Upload</span></button>
 										<button class="btn btn-default dropdown-toggle" data-toggle="dropdown" data-removeif="aVideoTaskSelected"><span class="caret"></span></button>
 										<ul class="dropdown-menu pull-right" data-removeif="aVideoTaskSelected">
-											<li data-foreach-album="albums"><a href="#" data-bind="album.name"></a></li>
+											<li data-foreach-album="albums"><a href="#" data-bind="album.name" data-event-click="album.uploadTask"></a></li>
+											<li class="divider"></li>
+											<li><a href="#" data-event-click="appContext.newAlbum">Create New Album</a></li>
 										</ul>
 									</div>
 								</div>
-							</div>
+							</nav>
 						</div>
 					</div>
 					<div class="row" style="padding: 0 10px">
-						<div class="col-lg-4 col-sm-6 col-12" data-foreach-task="tasks" style="padding-bottom: 30px">
-							<div class="thumbnail task" data-addclass-selected="task.selected">
+						<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" data-foreach-task="tasks" style="padding-bottom: 30px">
+							<div class="thumbnail task" data-addclass-selected="task.selected" data-addclass-selectable="task.selectable">
 								<div class="photoContainer" data-event-click="task.toggleSelection">
 									<img data-bind-src="task.thumbnail" data-event-load="task.imgOnLoad">
 									<div class="placeholder" data-hideif="task.previewLoaded">
@@ -96,7 +98,7 @@
 									<div class="videoIcon" data-insertif="task.isVideo">
 										<i class="icon-facetime-video icon-large"></i>
 									</div>
-									<div class="postingIcon" data-insertif="task.posting" data-addclass-success="task.posting_success" data-addclass-failure="task.posting_failure">
+									<div class="postingIcon" data-insertif="task.showStatus" data-addclass-success="task.post_success" data-addclass-failure="task.post_failure">
 										<div></div>
 										<span class="lead"><i class="icon-sign-blank"></i></span>
 										<span class="lead"><i class="icon-cloud"></i></span>
@@ -106,12 +108,44 @@
 									</div>
 								</div>
 								<div class="caption">
-									<input type="text" placeholder="Caption" class="caption-box form-control" data-bind="task.caption" data-event-change="task.captionChanged" data-bind-disabled="task.posting">
-									<textarea rows="3" placeholder="Description" class="description-box form-control" data-bind="task.description" data-event-change="task.descriptionChanged" data-bind-disabled="task.posting"></textarea>
+									<input type="text" placeholder="Caption" class="caption-box form-control" data-bind="task.caption" data-event-change="task.captionChanged" data-bind-disabled="task.showStatus">
+									<textarea rows="3" placeholder="Description" class="description-box form-control" data-bind="task.description" data-event-change="task.descriptionChanged" data-bind-disabled="task.showStatus"></textarea>
 								</div>
 								<div class="selectedIndicator" data-insertif="task.selected">
 									<i class="icon-ok icon-light icon-large"></i>
 								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="modal fade" id="newAlbumDialog" tabindex="-1" role="dialog" aria-labelledby="newAlbumDialogLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title">Upload to New Album</h4>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<input type="text" class="form-control" placeholder="Title">
+						</div>
+						<div class="form-group">
+							<textarea class="form-control" placeholder="Description"></textarea>
+						</div>
+						<div class="form-group">
+							<div class="btn-group btn-block">
+								<button type="button" class="btn btn-default btn-block dropdown-toggle" data-toggle="dropdown">
+									Action <span class="caret"></span>
+								</button>
+								<ul class="dropdown-menu" role="menu">
+									<li><a href="#">Action</a></li>
+									<li><a href="#">Another action</a></li>
+									<li><a href="#">Something else here</a></li>
+									<li class="divider"></li>
+									<li><a href="#">Separated link</a></li>
+								</ul>
 							</div>
 						</div>
 					</div>

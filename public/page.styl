@@ -71,8 +71,11 @@ body
 	transition margin 0, border-width 0
 	position relative
 
-	&:hover
+	&.selectable:hover
 		border-color rgb(66, 139, 202)
+
+		.photoContainer
+			cursor pointer
 
 	&.selected
 		border-color rgb(66, 139, 202)
@@ -83,7 +86,6 @@ body
 		position relative
 		width 100%
 		padding-bottom 75%
-		cursor pointer
 
 		img
 			position absolute
@@ -200,3 +202,12 @@ body
 			padding 9px 9px 9px 8px
 			background-color rgba(0, 0, 0, 0.75)
 			border-radius 4px
+
+.navbar .btn-toolbar
+	margin 7px 0
+
+	&.pull-left
+		margin-left 15px
+
+	&.pull-right
+		margin-right 15px
