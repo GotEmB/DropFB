@@ -183,9 +183,17 @@ io.sockets.on("connection", function(socket) {
         url: taskPath
       }
     }, function(error, response, body) {
+      body = (function() {
+        try {
+          return JSON.parse(body);
+        } catch (_error) {
+          return body;
+        }
+      })();
       callback({
         success: !((error != null) || (body.error != null))
       });
+      console.log(body);
       task.status = !((error != null) || (body.error != null)) ? "post_success" : "post_failure";
       return io.sockets.clients().filter(function(x) {
         return x !== socket && x.userId === socket.userId;

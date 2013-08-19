@@ -16,6 +16,7 @@ require.config
 constants =
 	videoFormats: ["3g2", "3gp", "3gpp", "asf", "avi", "dat", "divx", "dv", "f4v", "flv", "m2ts", "m4v", "mkv", "mod", "mov", "mp4", "mpe", "mpeg", "mpeg4", "mpg", "mts", "nsv", "ogm", "ogv", "qt", "tod", "ts", "vob", "wmv"]
 	fbPermissions: ["user_photos", "photo_upload"]
+	privacyOptions: EVERYONE: "Everyone", ALL_FRIENDS: "Friends", SELF: "Myself"
 
 appContext = undefined
 
@@ -23,11 +24,32 @@ define "Batman", ["batman"], (Batman) -> Batman.DOM.readers.batmantarget = Batma
 
 require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], ($, Batman, FB, Dropbox, io) ->
 
+	class NewAlbum extends Batman.Model
+		@accessor "notValid", -> not (@get("title")? and @get("title") isnt "")
+		constructor: ->
+			super
+			@set "privacyOptions", new Batman.Set (new PrivacyOption value: key, label: value for key, value of constants.privacyOptions)...
+			@set "selectedPrivacyOption", @get("privacyOptions").find (x) -> x.get("label") is "Friends"
+		cancel: ->
+			$("#newAlbumDialog").modal "hide"
+		createAndUpload: ->
+			FB.api "/me/albums", "post", name: @get("title"), message: @get("description"), privacy: value: @get("selectedPrivacyOption.value"), ({id, error}) =>
+				if error?
+					console.error error
+				else
+					appContext.get("albums").add newAlbum = new Album id: id, name: @get("title")
+					newAlbum.uploadTasks()
+				$("#newAlbumDialog").modal "hide"
+
+		class PrivacyOption extends Batman.Model
+			@accessor "selected", -> appContext.get("newAlbum.selectedPrivacyOption") is @
+			selectOption: -> appContext.set "newAlbum.selectedPrivacyOption", @
+
 	class Album extends Batman.Model
 		uploadTasks: ->
-			apsocket.get("selectedTasks").forEach (task) =>
+			appContext.get("selectedTasks").forEach (task) =>
 				task.set "status", "posting"
-				apsocket.socket.emit "uploadTask", fbAccessToken: FB.getAuthResponse().accessToken, taskPath: task.get("path"), albumId: @get("name"), ({success}) =>
+				appContext.socket.emit "uploadTask", fbAccessToken: FB.getAuthResponse().accessToken, taskPath: task.get("path"), albumId: @get("id"), ({success}) =>
 					task.set "status", if success then "post_success" else "post_failure"
 
 	class User extends Batman.Model
@@ -113,6 +135,7 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 						@unset "albums"
 						delete @fbLoginStatusChanged.inProgress
 			FB.getLoginStatus @fbLoginStatusChanged
+			$('#myModal').on "hidden.bs.modal", => @unset "newAlbum"
 		fbLogin: ->
 			FB.login (->), scope: constants.fbPermissions.join ","
 		dbChooseFiles: ->
@@ -137,8 +160,9 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 				task.set "status", "posting"
 				@socket.emit "uploadTask", fbAccessToken: FB.getAuthResponse().accessToken, taskPath: task.get("path"), ({success}) =>
 					task.set "status", if success then "post_success" else "post_failure"
-		newAlbum: ->
-			$("#newAlbumDialog").modal()
+		createNewAlbum: ->
+			@set "newAlbum", new NewAlbum
+			$("#newAlbumDialog").modal "show"
 
 	class DropFB extends Batman.App
 		@appContext: appContext = new AppContext

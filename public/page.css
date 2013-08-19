@@ -64,8 +64,9 @@ textarea.form-control.description-box {
 .icon-inline.icon-stack {
   width: 1em;
   height: 1em;
+  font-size: 0.8em;
   line-height: 1em;
-  vertical-align: -17%;
+  vertical-align: -12%;
 }
 .thumbnail.task {
   text-align: center;
@@ -246,6 +247,16 @@ textarea.form-control.description-box {
 }
 .navbar .btn-toolbar.pull-right {
   margin-right: 15px;
+}
+.btn.btn-text-left {
+  text-align: left;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+ul.dropdown-menu li.selected a {
+  color: #fff;
+  text-decoration: none;
+  background-color: #428bca;
 }
 @-moz-keyframes cloudPulse {
   0% {

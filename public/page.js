@@ -35,7 +35,12 @@ require.config({
 
 constants = {
   videoFormats: ["3g2", "3gp", "3gpp", "asf", "avi", "dat", "divx", "dv", "f4v", "flv", "m2ts", "m4v", "mkv", "mod", "mov", "mp4", "mpe", "mpeg", "mpeg4", "mpg", "mts", "nsv", "ogm", "ogv", "qt", "tod", "ts", "vob", "wmv"],
-  fbPermissions: ["user_photos", "photo_upload"]
+  fbPermissions: ["user_photos", "photo_upload"],
+  privacyOptions: {
+    EVERYONE: "Everyone",
+    ALL_FRIENDS: "Friends",
+    SELF: "Myself"
+  }
 };
 
 appContext = void 0;
@@ -45,7 +50,92 @@ define("Batman", ["batman"], function(Batman) {
 });
 
 require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], function($, Batman, FB, Dropbox, io) {
-  var Album, AppContext, DropFB, Task, User, _ref, _ref1, _ref2;
+  var Album, AppContext, DropFB, NewAlbum, Task, User, _ref, _ref1, _ref2;
+  NewAlbum = (function(_super) {
+    var PrivacyOption, _ref;
+
+    __extends(NewAlbum, _super);
+
+    NewAlbum.accessor("notValid", function() {
+      return !((this.get("title") != null) && this.get("title") !== "");
+    });
+
+    function NewAlbum() {
+      var key, value;
+      NewAlbum.__super__.constructor.apply(this, arguments);
+      this.set("privacyOptions", (function(func, args, ctor) {
+        ctor.prototype = func.prototype;
+        var child = new ctor, result = func.apply(child, args);
+        return Object(result) === result ? result : child;
+      })(Batman.Set, (function() {
+        var _ref, _results;
+        _ref = constants.privacyOptions;
+        _results = [];
+        for (key in _ref) {
+          value = _ref[key];
+          _results.push(new PrivacyOption({
+            value: key,
+            label: value
+          }));
+        }
+        return _results;
+      })(), function(){}));
+      this.set("selectedPrivacyOption", this.get("privacyOptions").find(function(x) {
+        return x.get("label") === "Friends";
+      }));
+    }
+
+    NewAlbum.prototype.cancel = function() {
+      return $("#newAlbumDialog").modal("hide");
+    };
+
+    NewAlbum.prototype.createAndUpload = function() {
+      var _this = this;
+      return FB.api("/me/albums", "post", {
+        name: this.get("title"),
+        message: this.get("description"),
+        privacy: {
+          value: this.get("selectedPrivacyOption.value")
+        }
+      }, function(_arg) {
+        var error, id, newAlbum;
+        id = _arg.id, error = _arg.error;
+        if (error != null) {
+          console.error(error);
+        } else {
+          appContext.get("albums").add(newAlbum = new Album({
+            id: id,
+            name: _this.get("title")
+          }));
+          newAlbum.uploadTasks();
+        }
+        return $("#newAlbumDialog").modal("hide");
+      });
+    };
+
+    PrivacyOption = (function(_super1) {
+      __extends(PrivacyOption, _super1);
+
+      function PrivacyOption() {
+        _ref = PrivacyOption.__super__.constructor.apply(this, arguments);
+        return _ref;
+      }
+
+      PrivacyOption.accessor("selected", function() {
+        return appContext.get("newAlbum.selectedPrivacyOption") === this;
+      });
+
+      PrivacyOption.prototype.selectOption = function() {
+        return appContext.set("newAlbum.selectedPrivacyOption", this);
+      };
+
+      return PrivacyOption;
+
+    })(Batman.Model);
+
+    return NewAlbum;
+
+  }).call(this, Batman.Model);
   Album = (function(_super) {
     __extends(Album, _super);
 
@@ -56,12 +146,12 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
 
     Album.prototype.uploadTasks = function() {
       var _this = this;
-      return apsocket.get("selectedTasks").forEach(function(task) {
+      return appContext.get("selectedTasks").forEach(function(task) {
         task.set("status", "posting");
-        return apsocket.socket.emit("uploadTask", {
+        return appContext.socket.emit("uploadTask", {
           fbAccessToken: FB.getAuthResponse().accessToken,
           taskPath: task.get("path"),
-          albumId: _this.get("name")
+          albumId: _this.get("id")
         }, function(_arg) {
           var success;
           success = _arg.success;
@@ -338,6 +428,9 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
         });
       });
       FB.getLoginStatus(this.fbLoginStatusChanged);
+      $('#myModal').on("hidden.bs.modal", function() {
+        return _this.unset("newAlbum");
+      });
     }
 
     AppContext.prototype.fbLogin = function() {
@@ -425,8 +518,9 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
       });
     };
 
-    AppContext.prototype.newAlbum = function() {
-      return $("#newAlbumDialog").modal();
+    AppContext.prototype.createNewAlbum = function() {
+      this.set("newAlbum", new NewAlbum);
+      return $("#newAlbumDialog").modal("show");
     };
 
     return AppContext;
