@@ -12,7 +12,7 @@ body
 	padding-top 70px
 
 .form-control
-	input&[type="text"].caption-box, textarea&.description-box
+	textarea&.caption-box
 		border none
 		border-radius 0
 		box-shadow none
@@ -20,19 +20,15 @@ body
 		font-family "Helvetica Neue", Helvetica, Arial, sans-serif
 		padding 0
 		background-color transparent
+		font-weight 500
+		resize none
+		font-size 14px
+		line-height 20px
+		height 40px
 
 		&[readonly], &[disabled]
 			cursor default
 			background-color transparent
-
-	input&[type="text"].caption-box
-		font-weight 500
-		line-height 1.1
-		font-size 24px
-
-	textarea&.description-box
-		font-size 14px
-		resize none
 
 #navbar2
 	position relative

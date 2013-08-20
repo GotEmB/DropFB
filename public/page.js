@@ -35,7 +35,7 @@ require.config({
 
 constants = {
   videoFormats: ["3g2", "3gp", "3gpp", "asf", "avi", "dat", "divx", "dv", "f4v", "flv", "m2ts", "m4v", "mkv", "mod", "mov", "mp4", "mpe", "mpeg", "mpeg4", "mpg", "mts", "nsv", "ogm", "ogv", "qt", "tod", "ts", "vob", "wmv"],
-  fbPermissions: ["user_photos", "photo_upload"],
+  fbPermissions: ["user_photos", "photo_upload", "user_videos", "video_upload"],
   privacyOptions: {
     EVERYONE: "Everyone",
     ALL_FRIENDS: "Friends",
@@ -194,7 +194,7 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
   Task = (function(_super) {
     __extends(Task, _super);
 
-    Task.encode("path", "thumbnail", "type", "caption", "description", "status");
+    Task.encode("path", "thumbnail", "type", "caption", "status");
 
     Task.accessor("isVideo", function() {
       return this.get("type") === "video";
@@ -265,13 +265,6 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
       return appContext.socket.emit("captionChanged", {
         taskPath: this.get("path"),
         caption: this.get("caption")
-      });
-    };
-
-    Task.prototype.descriptionChanged = function() {
-      return appContext.socket.emit("descriptionChanged", {
-        taskPath: this.get("path"),
-        description: this.get("description")
       });
     };
 
@@ -401,15 +394,6 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
               return (_ref3 = _this.get("tasks").find(function(x) {
                 return x.get("path") === taskPath;
               })) != null ? _ref3.set("caption", caption) : void 0;
-            });
-            _this.socket.on("descriptionChanged", function(_arg2) {
-              var description, taskPath, _ref3;
-              taskPath = _arg2.taskPath, description = _arg2.description;
-              if (taskPath === _this.get("path")) {
-                return (_ref3 = _this.get("tasks").find(function(x) {
-                  return x.get("path") === taskPath;
-                })) != null ? _ref3.set("description", description) : void 0;
-              }
             });
             _this.socket.on("posting", function(_arg2) {
               var taskPath, _ref3;

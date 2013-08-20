@@ -47,28 +47,36 @@ io.sockets.on "connection", (socket) ->
 		currentTasks[socket.userId].filter((x) -> x.path is taskPath)[0].caption = caption
 		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "captionChanged", taskPath: taskPath, caption: caption
 
-	socket.on "descriptionChanged", ({taskPath, description}) ->
-		return unless socket.userId?
-		return unless currentTasks[socket.userId].some (x) -> x.path is taskPath
-		currentTasks[socket.userId].filter((x) -> x.path is taskPath)[0].description = description
-		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "descriptionChanged", taskPath: taskPath, description: description
-
 	socket.on "uploadTask", ({taskPath, fbAccessToken, albumId, delay}, callback) ->
 		return callback success: false unless socket.userId?
 		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath
 		task = currentTasks[socket.userId].filter((x) -> x.path is taskPath)[0]
 		task.status = "posting"
 		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "posting", taskPath: taskPath
-		setTimeout(
-			->
-				request.post "https://graph.facebook.com/#{albumId ? socket.userId}/photos", form: access_token: fbAccessToken, url: taskPath, (error, response, body) ->
-					body = try JSON.parse body catch then body
-					callback success: not (error? or body.error?)
-					console.log albumId: albumId, uri: response.url.href, response: body
-					task.status = unless error? or body.error? then "post_success" else "post_failure"
-					io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "uploadedTask", taskPath: taskPath, success: not (error? or body.error?)
-			delay ? 0
-		)
+		if task.type is "photo"
+			setTimeout(
+				->
+					request.post "https://graph.facebook.com/#{albumId ? socket.userId}/photos", form: access_token: fbAccessToken, url: taskPath, name: task.caption, (error, response, body) ->
+						body = try JSON.parse body catch then body
+						callback success: not (error? or body.error?)
+						console.log albumId: albumId, uri: response.url.href, response: body
+						task.status = unless error? or body.error? then "post_success" else "post_failure"
+						io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "uploadedTask", taskPath: taskPath, success: not (error? or body.error?)
+				delay ? 0
+			)
+		else if task.type is "video"
+			r2 = request.post "https://graph-video.facebook.com/me/videos"
+			form = r2.form()
+			form.append "access_token", fbAccessToken
+			form.append "name", task.caption
+			form.append "file", r1 = request.get taskPath
+			si = undefined
+			r1.on "response", (response) ->
+				console.log DownloadHeaders: response.headers
+				si = setInterval (-> console.log Downloaded: r1.response?.connection.socket.bytesRead, Uploaded: r2.req.connection.socket._bytesDispatched), 100
+			r2.on "end", ->
+				console.log "Done"
+				clearInterval si
 
 	socket.on "failureAck", ({taskPath}, callback) ->
 		return callback success: false unless socket.userId?

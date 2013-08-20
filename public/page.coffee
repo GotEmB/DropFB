@@ -15,7 +15,7 @@ require.config
 
 constants =
 	videoFormats: ["3g2", "3gp", "3gpp", "asf", "avi", "dat", "divx", "dv", "f4v", "flv", "m2ts", "m4v", "mkv", "mod", "mov", "mp4", "mpe", "mpeg", "mpeg4", "mpg", "mts", "nsv", "ogm", "ogv", "qt", "tod", "ts", "vob", "wmv"]
-	fbPermissions: ["user_photos", "photo_upload"]
+	fbPermissions: ["user_photos", "photo_upload", "user_videos", "video_upload"]
 	privacyOptions: EVERYONE: "Everyone", ALL_FRIENDS: "Friends", SELF: "Myself"
 
 appContext = undefined
@@ -60,7 +60,7 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 	class User extends Batman.Model
 
 	class Task extends Batman.Model
-		@encode "path", "thumbnail", "type", "caption", "description", "status"
+		@encode "path", "thumbnail", "type", "caption", "status"
 		@accessor "isVideo", -> @get("type") is "video"
 		@accessor "selectable", -> @get("status") not in ["posting", "post_success", "post_failure"]
 		@accessor "posting", -> @get("status") is "posting"
@@ -85,8 +85,6 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 			@set "previewLoaded", true
 		captionChanged: ->
 			appContext.socket.emit "captionChanged", taskPath: @get("path"), caption: @get "caption"
-		descriptionChanged: ->
-			appContext.socket.emit "descriptionChanged", taskPath: @get("path"), description: @get "description"
 
 	class AppContext extends Batman.Model
 		@accessor "userLoggedIn", -> @get("currentUser") instanceof User
@@ -124,8 +122,6 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 							@get("tasks").remove @get("tasks").find (x) -> x.get("path") is taskPath
 						@socket.on "captionChanged", ({taskPath, caption}) =>
 							@get("tasks").find((x) -> x.get("path") is taskPath)?.set "caption", caption
-						@socket.on "descriptionChanged", ({taskPath, description}) =>
-							@get("tasks").find((x) -> x.get("path") is taskPath)?.set "description", description if taskPath is @get "path"
 						@socket.on "posting", ({taskPath}) =>
 							@get("tasks").find((x) -> x.get("path") is taskPath)?.set "status", "posting"
 						@socket.on "uploadedTask", ({taskPath, success}) =>

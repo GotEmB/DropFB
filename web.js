@@ -128,31 +128,8 @@ io.sockets.on("connection", function(socket) {
       });
     });
   });
-  socket.on("descriptionChanged", function(_arg) {
-    var description, taskPath;
-    taskPath = _arg.taskPath, description = _arg.description;
-    if (socket.userId == null) {
-      return;
-    }
-    if (!currentTasks[socket.userId].some(function(x) {
-      return x.path === taskPath;
-    })) {
-      return;
-    }
-    currentTasks[socket.userId].filter(function(x) {
-      return x.path === taskPath;
-    })[0].description = description;
-    return io.sockets.clients().filter(function(x) {
-      return x !== socket && x.userId === socket.userId;
-    }).forEach(function(x) {
-      return x.emit("descriptionChanged", {
-        taskPath: taskPath,
-        description: description
-      });
-    });
-  });
   socket.on("uploadTask", function(_arg, callback) {
-    var albumId, delay, fbAccessToken, task, taskPath;
+    var albumId, delay, fbAccessToken, form, r1, r2, si, task, taskPath;
     taskPath = _arg.taskPath, fbAccessToken = _arg.fbAccessToken, albumId = _arg.albumId, delay = _arg.delay;
     if (socket.userId == null) {
       return callback({
@@ -177,39 +154,65 @@ io.sockets.on("connection", function(socket) {
         taskPath: taskPath
       });
     });
-    return setTimeout(function() {
-      return request.post("https://graph.facebook.com/" + (albumId != null ? albumId : socket.userId) + "/photos", {
-        form: {
-          access_token: fbAccessToken,
-          url: taskPath
-        }
-      }, function(error, response, body) {
-        body = (function() {
-          try {
-            return JSON.parse(body);
-          } catch (_error) {
-            return body;
+    if (task.type === "photo") {
+      return setTimeout(function() {
+        return request.post("https://graph.facebook.com/" + (albumId != null ? albumId : socket.userId) + "/photos", {
+          form: {
+            access_token: fbAccessToken,
+            url: taskPath,
+            name: task.caption
           }
-        })();
-        callback({
-          success: !((error != null) || (body.error != null))
-        });
-        console.log({
-          albumId: albumId,
-          uri: response.url.href,
-          response: body
-        });
-        task.status = !((error != null) || (body.error != null)) ? "post_success" : "post_failure";
-        return io.sockets.clients().filter(function(x) {
-          return x !== socket && x.userId === socket.userId;
-        }).forEach(function(x) {
-          return x.emit("uploadedTask", {
-            taskPath: taskPath,
+        }, function(error, response, body) {
+          body = (function() {
+            try {
+              return JSON.parse(body);
+            } catch (_error) {
+              return body;
+            }
+          })();
+          callback({
             success: !((error != null) || (body.error != null))
           });
+          console.log({
+            albumId: albumId,
+            uri: response.url.href,
+            response: body
+          });
+          task.status = !((error != null) || (body.error != null)) ? "post_success" : "post_failure";
+          return io.sockets.clients().filter(function(x) {
+            return x !== socket && x.userId === socket.userId;
+          }).forEach(function(x) {
+            return x.emit("uploadedTask", {
+              taskPath: taskPath,
+              success: !((error != null) || (body.error != null))
+            });
+          });
         });
+      }, delay != null ? delay : 0);
+    } else if (task.type === "video") {
+      r2 = request.post("https://graph-video.facebook.com/me/videos");
+      form = r2.form();
+      form.append("access_token", fbAccessToken);
+      form.append("name", task.caption);
+      form.append("file", r1 = request.get(taskPath));
+      si = void 0;
+      r1.on("response", function(response) {
+        console.log({
+          DownloadHeaders: response.headers
+        });
+        return si = setInterval((function() {
+          var _ref;
+          return console.log({
+            Downloaded: (_ref = r1.response) != null ? _ref.connection.socket.bytesRead : void 0,
+            Uploaded: r2.req.connection.socket._bytesDispatched
+          });
+        }), 100);
       });
-    }, delay != null ? delay : 0);
+      return r2.on("end", function() {
+        console.log("Done");
+        return clearInterval(si);
+      });
+    }
   });
   return socket.on("failureAck", function(_arg, callback) {
     var taskPath;
@@ -239,7 +242,3 @@ io.sockets.on("connection", function(socket) {
 server.listen((port = (_ref = process.env.PORT) != null ? _ref : 5080), function() {
   return console.log("Listening on port " + port);
 });
-
-/*
-//@ sourceMappingURL=web.map
-*/

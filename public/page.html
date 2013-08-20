@@ -39,10 +39,11 @@
 			</div>
 			<div data-hideif="pageLoading" style="display: none">
 				<div class="row" data-hideif="userLoggedIn">
-					<div class="jumbotron col-lg-8 col-offset-2">
+					<div class="col-lg-2 col-md-1 col-sm-0 col-xs-0"></div>
+					<div class="jumbotron col-lg-8 col-md-10 col-sm-12 col-xs-12">
 						<h1>Get Started</h1>
 						<p>DropFB will let you upload photos and videos from your Dropbox directly to Facebook. Login to DropFB using Facebook to get started.</p>
-						<p><button class="btn btn-primary btn-large" data-event-click="appContext.fbLogin"><i class="icon-facebook-sign icon-large"></i>&nbsp;&nbsp;Login</button></p>
+						<p><button class="btn btn-primary btn-lg" data-event-click="appContext.fbLogin"><i class="icon-facebook-sign icon-large"></i>&nbsp;&nbsp;Login</button></p>
 					</div>
 				</div>
 				<div data-showif="userLoggedIn">
@@ -108,8 +109,7 @@
 									</div>
 								</div>
 								<div class="caption">
-									<input type="text" placeholder="Caption" class="caption-box form-control" data-bind="task.caption" data-event-change="task.captionChanged" data-bind-disabled="task.showStatus">
-									<textarea rows="3" placeholder="Description" class="description-box form-control" data-bind="task.description" data-event-change="task.descriptionChanged" data-bind-disabled="task.showStatus"></textarea>
+									<textarea placeholder="Caption" rows="2" class="caption-box form-control" data-bind="task.caption" data-event-change="task.captionChanged" data-bind-disabled="task.showStatus"></textarea>
 								</div>
 								<div class="selectedIndicator" data-insertif="task.selected">
 									<i class="icon-ok icon-light icon-large"></i>
