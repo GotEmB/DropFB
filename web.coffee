@@ -53,18 +53,22 @@ io.sockets.on "connection", (socket) ->
 		currentTasks[socket.userId].filter((x) -> x.path is taskPath)[0].description = description
 		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "descriptionChanged", taskPath: taskPath, description: description
 
-	socket.on "uploadTask", ({taskPath, fbAccessToken, albumId}, callback) ->
+	socket.on "uploadTask", ({taskPath, fbAccessToken, albumId, delay}, callback) ->
 		return callback success: false unless socket.userId?
 		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath
 		task = currentTasks[socket.userId].filter((x) -> x.path is taskPath)[0]
 		task.status = "posting"
 		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "posting", taskPath: taskPath
-		request.post "https://graph.facebook.com/#{albumId ? socket.userId}/photos", form: access_token: fbAccessToken, url: taskPath, (error, response, body) ->
-			body = try JSON.parse body catch then body
-			callback success: not (error? or body.error?)
-			console.log body
-			task.status = unless error? or body.error? then "post_success" else "post_failure"
-			io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "uploadedTask", taskPath: taskPath, success: not (error? or body.error?)
+		setTimeout(
+			->
+				request.post "https://graph.facebook.com/#{albumId ? socket.userId}/photos", form: access_token: fbAccessToken, url: taskPath, (error, response, body) ->
+					body = try JSON.parse body catch then body
+					callback success: not (error? or body.error?)
+					console.log albumId: albumId, uri: response.url.href, response: body
+					task.status = unless error? or body.error? then "post_success" else "post_failure"
+					io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "uploadedTask", taskPath: taskPath, success: not (error? or body.error?)
+			delay ? 0
+		)
 
 	socket.on "failureAck", ({taskPath}, callback) ->
 		return callback success: false unless socket.userId?

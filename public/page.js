@@ -107,7 +107,7 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
             id: id,
             name: _this.get("title")
           }));
-          newAlbum.uploadTasks();
+          newAlbum.delayedUploadTasks();
         }
         return $("#newAlbumDialog").modal("hide");
       });
@@ -152,6 +152,23 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
           fbAccessToken: FB.getAuthResponse().accessToken,
           taskPath: task.get("path"),
           albumId: _this.get("id")
+        }, function(_arg) {
+          var success;
+          success = _arg.success;
+          return task.set("status", success ? "post_success" : "post_failure");
+        });
+      });
+    };
+
+    Album.prototype.delayedUploadTasks = function() {
+      var _this = this;
+      return appContext.get("selectedTasks").forEach(function(task) {
+        task.set("status", "posting");
+        return appContext.socket.emit("uploadTask", {
+          fbAccessToken: FB.getAuthResponse().accessToken,
+          taskPath: task.get("path"),
+          albumId: _this.get("id"),
+          delay: 3000
         }, function(_arg) {
           var success;
           success = _arg.success;

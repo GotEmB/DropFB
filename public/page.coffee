@@ -38,7 +38,7 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 					console.error error
 				else
 					appContext.get("albums").add newAlbum = new Album id: id, name: @get("title")
-					newAlbum.uploadTasks()
+					newAlbum.delayedUploadTasks()
 				$("#newAlbumDialog").modal "hide"
 
 		class PrivacyOption extends Batman.Model
@@ -50,6 +50,11 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 			appContext.get("selectedTasks").forEach (task) =>
 				task.set "status", "posting"
 				appContext.socket.emit "uploadTask", fbAccessToken: FB.getAuthResponse().accessToken, taskPath: task.get("path"), albumId: @get("id"), ({success}) =>
+					task.set "status", if success then "post_success" else "post_failure"
+		delayedUploadTasks: ->
+			appContext.get("selectedTasks").forEach (task) =>
+				task.set "status", "posting"
+				appContext.socket.emit "uploadTask", fbAccessToken: FB.getAuthResponse().accessToken, taskPath: task.get("path"), albumId: @get("id"), delay: 3000, ({success}) =>
 					task.set "status", if success then "post_success" else "post_failure"
 
 	class User extends Batman.Model

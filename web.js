@@ -152,8 +152,8 @@ io.sockets.on("connection", function(socket) {
     });
   });
   socket.on("uploadTask", function(_arg, callback) {
-    var albumId, fbAccessToken, task, taskPath;
-    taskPath = _arg.taskPath, fbAccessToken = _arg.fbAccessToken, albumId = _arg.albumId;
+    var albumId, delay, fbAccessToken, task, taskPath;
+    taskPath = _arg.taskPath, fbAccessToken = _arg.fbAccessToken, albumId = _arg.albumId, delay = _arg.delay;
     if (socket.userId == null) {
       return callback({
         success: false
@@ -177,33 +177,39 @@ io.sockets.on("connection", function(socket) {
         taskPath: taskPath
       });
     });
-    return request.post("https://graph.facebook.com/" + (albumId != null ? albumId : socket.userId) + "/photos", {
-      form: {
-        access_token: fbAccessToken,
-        url: taskPath
-      }
-    }, function(error, response, body) {
-      body = (function() {
-        try {
-          return JSON.parse(body);
-        } catch (_error) {
-          return body;
+    return setTimeout(function() {
+      return request.post("https://graph.facebook.com/" + (albumId != null ? albumId : socket.userId) + "/photos", {
+        form: {
+          access_token: fbAccessToken,
+          url: taskPath
         }
-      })();
-      callback({
-        success: !((error != null) || (body.error != null))
-      });
-      console.log(body);
-      task.status = !((error != null) || (body.error != null)) ? "post_success" : "post_failure";
-      return io.sockets.clients().filter(function(x) {
-        return x !== socket && x.userId === socket.userId;
-      }).forEach(function(x) {
-        return x.emit("uploadedTask", {
-          taskPath: taskPath,
+      }, function(error, response, body) {
+        body = (function() {
+          try {
+            return JSON.parse(body);
+          } catch (_error) {
+            return body;
+          }
+        })();
+        callback({
           success: !((error != null) || (body.error != null))
         });
+        console.log({
+          albumId: albumId,
+          uri: response.url.href,
+          response: body
+        });
+        task.status = !((error != null) || (body.error != null)) ? "post_success" : "post_failure";
+        return io.sockets.clients().filter(function(x) {
+          return x !== socket && x.userId === socket.userId;
+        }).forEach(function(x) {
+          return x.emit("uploadedTask", {
+            taskPath: taskPath,
+            success: !((error != null) || (body.error != null))
+          });
+        });
       });
-    });
+    }, delay != null ? delay : 0);
   });
   return socket.on("failureAck", function(_arg, callback) {
     var taskPath;
