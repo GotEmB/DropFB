@@ -39,6 +39,8 @@ body
 		right 0
 		top 70px
 		z-index 100
+		margin-left 0
+		margin-right 0
 
 		& + div
 			margin-top 70px
@@ -77,7 +79,7 @@ body
 	&.selected
 		border-color rgb(66, 139, 202)
 		border-width 2px
-		margin -1px
+		padding 3px
 
 	.photoContainer
 		position relative
@@ -152,6 +154,9 @@ body
 				height 100%
 				background-color rgba(200, 200, 200, 0.5)
 
+			svg
+				display none
+
 			&.success
 
 				& > span.lead:nth-of-type(1), & > span.lead:nth-of-type(2), & > span.lead:nth-of-type(3)
@@ -173,6 +178,33 @@ body
 				& > span.lead:nth-of-type(5)
 					color rgb(255, 255, 255)
 					transition color 250ms
+
+			&.showprogress
+
+				& > span:not(:first-of-type)
+					display none
+
+				& > svg
+					display block
+					position absolute
+					top 50%
+					left 50%
+					margin-top -24px
+					margin-left -25px
+
+					path
+						stroke none
+
+						&:nth-of-type(1)
+							fill rgba(255, 255, 255, 0.5)
+
+						&:nth-of-type(2)
+							fill white
+
+					circle
+						fill none
+						stroke white
+						stroke-width 2px
 
 	.selectedIndicator
 		position absolute
@@ -202,12 +234,6 @@ body
 
 .navbar .btn-toolbar
 	margin 7px 0
-
-	&.pull-left
-		margin-left 15px
-
-	&.pull-right
-		margin-right 15px
 
 .btn.btn-text-left
 	text-align left

@@ -31,6 +31,8 @@ textarea.form-control.caption-box[disabled] {
   right: 0;
   top: 70px;
   z-index: 100;
+  margin-left: 0;
+  margin-right: 0;
 }
 #navbar2.affix + div {
   margin-top: 70px;
@@ -79,7 +81,7 @@ textarea.form-control.caption-box[disabled] {
 .thumbnail.task.selected {
   border-color: #428bca;
   border-width: 2px;
-  margin: -1px;
+  padding: 3px;
 }
 .thumbnail.task .photoContainer {
   position: relative;
@@ -159,6 +161,9 @@ textarea.form-control.caption-box[disabled] {
   height: 100%;
   background-color: rgba(200,200,200,0.5);
 }
+.thumbnail.task .photoContainer .postingIcon svg {
+  display: none;
+}
 .thumbnail.task .photoContainer .postingIcon.success > span.lead:nth-of-type(1),
 .thumbnail.task .photoContainer .postingIcon.success > span.lead:nth-of-type(2),
 .thumbnail.task .photoContainer .postingIcon.success > span.lead:nth-of-type(3) {
@@ -205,6 +210,31 @@ textarea.form-control.caption-box[disabled] {
   -ms-transition: color 250ms;
   transition: color 250ms;
 }
+.thumbnail.task .photoContainer .postingIcon.showprogress > span:not(:first-of-type) {
+  display: none;
+}
+.thumbnail.task .photoContainer .postingIcon.showprogress > svg {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -24px;
+  margin-left: -25px;
+}
+.thumbnail.task .photoContainer .postingIcon.showprogress > svg path {
+  stroke: none;
+}
+.thumbnail.task .photoContainer .postingIcon.showprogress > svg path:nth-of-type(1) {
+  fill: rgba(255,255,255,0.5);
+}
+.thumbnail.task .photoContainer .postingIcon.showprogress > svg path:nth-of-type(2) {
+  fill: #fff;
+}
+.thumbnail.task .photoContainer .postingIcon.showprogress > svg circle {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2px;
+}
 .thumbnail.task .selectedIndicator {
   position: absolute;
   background-color: #428bca;
@@ -234,12 +264,6 @@ textarea.form-control.caption-box[disabled] {
 }
 .navbar .btn-toolbar {
   margin: 7px 0;
-}
-.navbar .btn-toolbar.pull-left {
-  margin-left: 15px;
-}
-.navbar .btn-toolbar.pull-right {
-  margin-right: 15px;
 }
 .btn.btn-text-left {
   text-align: left;

@@ -60,13 +60,32 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 	class User extends Batman.Model
 
 	class Task extends Batman.Model
-		@encode "path", "thumbnail", "type", "caption", "status"
+		@encode "path", "thumbnail", "type", "caption", "status", "downloadProgress", "uploadProgress"
 		@accessor "isVideo", -> @get("type") is "video"
-		@accessor "selectable", -> @get("status") not in ["posting", "post_success", "post_failure"]
+		@accessor "selectable", -> @get("status") not in ["posting", "post_success", "post_failure", "transferring"]
 		@accessor "posting", -> @get("status") is "posting"
 		@accessor "post_success", -> @get("status") is "post_success"
 		@accessor "post_failure", -> @get("status") is "post_failure"
 		@accessor "showStatus", -> @get("status")?
+		@accessor "showProgress", -> @get("status") is "transferring"
+		@accessor "downloadPie", ->
+			p = Number @get("downloadProgress") ? 0
+			p = 99.99 if p > 99.99
+			"""
+				M 25 25
+				L 25 10
+				A 15 15 0 #{if p < 50 then 0 else 1} 1 #{25 + 15 * Math.sin p * Math.PI / 50} #{25 - 15 * Math.cos p * Math.PI / 50}
+				Z
+			"""
+		@accessor "uploadPie", ->
+			p = Number @get("uploadProgress") ? 0
+			p = 99.99 if p > 99.99
+			"""
+				M 25 25
+				L 25 10
+				A 15 15 0 #{if p < 50 then 0 else 1} 1 #{25 + 15 * Math.sin p * Math.PI / 50} #{25 - 15 * Math.cos p * Math.PI / 50}
+				Z
+			"""
 		constructor: ->
 			super
 			@set "selected", false
@@ -124,6 +143,8 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 							@get("tasks").find((x) -> x.get("path") is taskPath)?.set "caption", caption
 						@socket.on "posting", ({taskPath}) =>
 							@get("tasks").find((x) -> x.get("path") is taskPath)?.set "status", "posting"
+						@socket.on "transferring", ({taskPath}) =>
+							@get("tasks").find((x) -> x.get("path") is taskPath)?.set "status", "transferring"
 						@socket.on "uploadedTask", ({taskPath, success}) =>
 							@get("tasks").find((x) -> x.get("path") is taskPath)?.set "status", if success then "post_success" else "post_failure"
 						@socket.on "failureAck", ({taskPath}) =>
@@ -158,7 +179,7 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 					@get("tasks").remove task if success
 		uploadTasks: ->
 			@get("selectedTasks").forEach (task) =>
-				task.set "status", "posting"
+				task.set "status", if task.get("type") is "video" then "transferring" else "posting"
 				@socket.emit "uploadTask", fbAccessToken: FB.getAuthResponse().accessToken, taskPath: task.get("path"), ({success}) =>
 					task.set "status", if success then "post_success" else "post_failure"
 		createNewAlbum: ->

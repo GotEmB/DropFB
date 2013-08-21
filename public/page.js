@@ -194,7 +194,7 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
   Task = (function(_super) {
     __extends(Task, _super);
 
-    Task.encode("path", "thumbnail", "type", "caption", "status");
+    Task.encode("path", "thumbnail", "type", "caption", "status", "downloadProgress", "uploadProgress");
 
     Task.accessor("isVideo", function() {
       return this.get("type") === "video";
@@ -202,7 +202,7 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
 
     Task.accessor("selectable", function() {
       var _ref2;
-      return (_ref2 = this.get("status")) !== "posting" && _ref2 !== "post_success" && _ref2 !== "post_failure";
+      return (_ref2 = this.get("status")) !== "posting" && _ref2 !== "post_success" && _ref2 !== "post_failure" && _ref2 !== "transferring";
     });
 
     Task.accessor("posting", function() {
@@ -219,6 +219,28 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
 
     Task.accessor("showStatus", function() {
       return this.get("status") != null;
+    });
+
+    Task.accessor("showProgress", function() {
+      return this.get("status") === "transferring";
+    });
+
+    Task.accessor("downloadPie", function() {
+      var p, _ref2;
+      p = Number((_ref2 = this.get("downloadProgress")) != null ? _ref2 : 0);
+      if (p > 99.99) {
+        p = 99.99;
+      }
+      return "M 25 25\nL 25 10\nA 15 15 0 " + (p < 50 ? 0 : 1) + " 1 " + (25 + 15 * Math.sin(p * Math.PI / 50)) + " " + (25 - 15 * Math.cos(p * Math.PI / 50)) + "\nZ";
+    });
+
+    Task.accessor("uploadPie", function() {
+      var p, _ref2;
+      p = Number((_ref2 = this.get("uploadProgress")) != null ? _ref2 : 0);
+      if (p > 99.99) {
+        p = 99.99;
+      }
+      return "M 25 25\nL 25 10\nA 15 15 0 " + (p < 50 ? 0 : 1) + " 1 " + (25 + 15 * Math.sin(p * Math.PI / 50)) + " " + (25 - 15 * Math.cos(p * Math.PI / 50)) + "\nZ";
     });
 
     function Task() {
@@ -402,6 +424,13 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
                 return x.get("path") === taskPath;
               })) != null ? _ref3.set("status", "posting") : void 0;
             });
+            _this.socket.on("transferring", function(_arg2) {
+              var taskPath, _ref3;
+              taskPath = _arg2.taskPath;
+              return (_ref3 = _this.get("tasks").find(function(x) {
+                return x.get("path") === taskPath;
+              })) != null ? _ref3.set("status", "transferring") : void 0;
+            });
             _this.socket.on("uploadedTask", function(_arg2) {
               var success, taskPath, _ref3;
               taskPath = _arg2.taskPath, success = _arg2.success;
@@ -507,7 +536,7 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
     AppContext.prototype.uploadTasks = function() {
       var _this = this;
       return this.get("selectedTasks").forEach(function(task) {
-        task.set("status", "posting");
+        task.set("status", task.get("type") === "video" ? "transferring" : "posting");
         return _this.socket.emit("uploadTask", {
           fbAccessToken: FB.getAuthResponse().accessToken,
           taskPath: task.get("path")
@@ -549,7 +578,3 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
     });
   });
 });
-
-/*
-//@ sourceMappingURL=page.map
-*/

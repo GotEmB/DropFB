@@ -173,11 +173,6 @@ io.sockets.on("connection", function(socket) {
           callback({
             success: !((error != null) || (body.error != null))
           });
-          console.log({
-            albumId: albumId,
-            uri: response.url.href,
-            response: body
-          });
           task.status = !((error != null) || (body.error != null)) ? "post_success" : "post_failure";
           return io.sockets.clients().filter(function(x) {
             return x !== socket && x.userId === socket.userId;
@@ -197,20 +192,64 @@ io.sockets.on("connection", function(socket) {
       form.append("file", r1 = request.get(taskPath));
       si = void 0;
       r1.on("response", function(response) {
-        console.log({
-          DownloadHeaders: response.headers
-        });
-        return si = setInterval((function() {
-          var _ref;
-          return console.log({
-            Downloaded: (_ref = r1.response) != null ? _ref.connection.socket.bytesRead : void 0,
-            Uploaded: r2.req.connection.socket._bytesDispatched
+        var fileSize, oldProgress;
+        io.sockets.clients().filter(function(x) {
+          return x.userId === socket.userId;
+        }).forEach(function(x) {
+          return x.emit("transferring", {
+            taskPath: taskPath
           });
-        }), 100);
+        });
+        fileSize = Number(response.Headers["content-length"]);
+        oldProgress = {
+          download: 0,
+          upload: 0
+        };
+        return si = setInterval(function() {
+          var _ref;
+          task.downloadProgress = ((_ref = r1.response) != null ? _ref.connection.socket.bytesRead : void 0) / fileSize * 100;
+          task.uploadProgress = r2.req.connection.socket._bytesDispatched / fileSize * 100;
+          if (oldProgress.download === task.downloadProgress && oldProgress.upload === task.uploadProgress) {
+            return;
+          }
+          return io.sockets.clients().filter(function(x) {
+            return x.userId === socket.userId;
+          }).forEach(function(x) {
+            return x.volatile.emit("progress", {
+              taskPath: taskPath,
+              download: task.downloadProgress,
+              upload: task.uploadProgress
+            });
+          });
+        }, 100);
       });
-      return r2.on("end", function() {
-        console.log("Done");
-        return clearInterval(si);
+      return r1.on("response", function(response) {
+        task.downloadProgress = task.uploadProgress = 0;
+        io.sockets.clients().filter(function(x) {
+          return x.userId === socket.userId;
+        }).forEach(function(x) {
+          return x.volatile.emit("progress", {
+            taskPath: taskPath,
+            download: 0,
+            upload: 0
+          });
+        });
+        console.log({
+          result: response
+        });
+        clearInterval(si);
+        callback({
+          success: true
+        });
+        task.status = "post_success";
+        return io.sockets.clients().filter(function(x) {
+          return x !== socket && x.userId === socket.userId;
+        }).forEach(function(x) {
+          return x.emit("uploadedTask", {
+            taskPath: taskPath,
+            success: true
+          });
+        });
       });
     }
   });

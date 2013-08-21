@@ -9,8 +9,8 @@
 		<script type="text/javascript" src="requirejs/require.js" data-main="page"></script>
 		<title>DropFB</title>
 	</head>
-	<body data-context="appContext">
-		<nav class="navbar navbar-fixed-top navbar-inverse">
+	<body data-context="appContext" style="margin-right: 0">
+		<nav class="navbar navbar-fixed-top navbar-inverse" style="margin-right: 0">
 			<div class="container">
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
@@ -55,7 +55,7 @@
 					<div id="navbar2" class="row">
 						<div class="backdrop"></div>
 						<div class="col-lg-12 col-sm-12 col-xs-12">
-							<nav class="navbar container" data-spy="affix">
+							<nav class="navbar navbar-default container" data-spy="affix">
 								<div class="btn-toolbar pull-left">
 									<div class="btn-group" data-removeif="noTasksSelected">
 										<button class="btn btn-default" disabled><span data-bind="selectedTasksCount"></span><span class="hide-sm">&nbsp;Selected</span></button>
@@ -99,13 +99,18 @@
 									<div class="videoIcon" data-insertif="task.isVideo">
 										<i class="icon-facetime-video icon-large"></i>
 									</div>
-									<div class="postingIcon" data-insertif="task.showStatus" data-addclass-success="task.post_success" data-addclass-failure="task.post_failure">
+									<div class="postingIcon" data-insertif="task.showStatus" data-addclass-success="task.post_success" data-addclass-failure="task.post_failure" data-addclass-showprogress="task.showProgress">
 										<div></div>
 										<span class="lead"><i class="icon-sign-blank"></i></span>
 										<span class="lead"><i class="icon-cloud"></i></span>
 										<span class="lead"><i class="icon-cloud-upload"></i></span>
 										<span class="lead"><i class="icon-ok-sign"></i></span>
 										<span class="lead"><i class="icon-remove-sign"></i></span>
+										<svg height="50" width="50">
+											<path data-bind-d="task.downloadPie"></path>
+											<path data-bind-d="task.uploadPie"></path>
+											<circle cx="25" cy="25" r="15"></circle>
+										</svg>
 									</div>
 								</div>
 								<div class="caption">
