@@ -67,7 +67,7 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 		@accessor "post_success", -> @get("status") is "post_success"
 		@accessor "post_failure", -> @get("status") is "post_failure"
 		@accessor "showStatus", -> @get("status")?
-		@accessor "showProgress", -> @get("status") is "transferring"
+		@accessor "showProgress", -> @get("status") is "transferring" and @get("downloadProgress") < 99.99 and @get("uploadProgress") < 99.99
 		@accessor "downloadPie", ->
 			p = Number @get("downloadProgress") ? 0
 			p = 99.99 if p > 99.99
@@ -149,6 +149,10 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 							@get("tasks").find((x) -> x.get("path") is taskPath)?.set "status", if success then "post_success" else "post_failure"
 						@socket.on "failureAck", ({taskPath}) =>
 							@get("tasks").find((x) -> x.get("path") is taskPath)?.unset "status"
+						@socket.on "progress", ({taskPath, download, upload}) =>
+							task = @get("tasks").find((x) -> x.get("path") is taskPath)
+							task?.set "downloadProgress", download
+							task?.set "uploadProgress", upload
 					else
 						@unset "currentUser"
 						@socket?.disconnect()
@@ -179,7 +183,7 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 					@get("tasks").remove task if success
 		uploadTasks: ->
 			@get("selectedTasks").forEach (task) =>
-				task.set "status", if task.get("type") is "video" then "transferring" else "posting"
+				task.set "status", "posting"
 				@socket.emit "uploadTask", fbAccessToken: FB.getAuthResponse().accessToken, taskPath: task.get("path"), ({success}) =>
 					task.set "status", if success then "post_success" else "post_failure"
 		createNewAlbum: ->

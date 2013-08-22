@@ -200,7 +200,8 @@ io.sockets.on("connection", function(socket) {
             taskPath: taskPath
           });
         });
-        fileSize = Number(response.Headers["content-length"]);
+        console.log(response);
+        fileSize = Number(response.headers["content-length"]);
         oldProgress = {
           download: 0,
           upload: 0
@@ -212,6 +213,10 @@ io.sockets.on("connection", function(socket) {
           if (oldProgress.download === task.downloadProgress && oldProgress.upload === task.uploadProgress) {
             return;
           }
+          oldProgress = {
+            download: task.downloadProgress,
+            upload: task.uploadProgress
+          };
           return io.sockets.clients().filter(function(x) {
             return x.userId === socket.userId;
           }).forEach(function(x) {
@@ -223,7 +228,7 @@ io.sockets.on("connection", function(socket) {
           });
         }, 100);
       });
-      return r1.on("response", function(response) {
+      return r2.on("response", function(response) {
         task.downloadProgress = task.uploadProgress = 0;
         io.sockets.clients().filter(function(x) {
           return x.userId === socket.userId;

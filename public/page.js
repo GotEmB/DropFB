@@ -222,7 +222,7 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
     });
 
     Task.accessor("showProgress", function() {
-      return this.get("status") === "transferring";
+      return this.get("status") === "transferring" && this.get("downloadProgress") < 99.99 && this.get("uploadProgress") < 99.99;
     });
 
     Task.accessor("downloadPie", function() {
@@ -438,12 +438,23 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
                 return x.get("path") === taskPath;
               })) != null ? _ref3.set("status", success ? "post_success" : "post_failure") : void 0;
             });
-            return _this.socket.on("failureAck", function(_arg2) {
+            _this.socket.on("failureAck", function(_arg2) {
               var taskPath, _ref3;
               taskPath = _arg2.taskPath;
               return (_ref3 = _this.get("tasks").find(function(x) {
                 return x.get("path") === taskPath;
               })) != null ? _ref3.unset("status") : void 0;
+            });
+            return _this.socket.on("progress", function(_arg2) {
+              var download, task, taskPath, upload;
+              taskPath = _arg2.taskPath, download = _arg2.download, upload = _arg2.upload;
+              task = _this.get("tasks").find(function(x) {
+                return x.get("path") === taskPath;
+              });
+              if (task != null) {
+                task.set("downloadProgress", download);
+              }
+              return task != null ? task.set("uploadProgress", upload) : void 0;
             });
           } else {
             _this.unset("currentUser");
@@ -536,7 +547,7 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
     AppContext.prototype.uploadTasks = function() {
       var _this = this;
       return this.get("selectedTasks").forEach(function(task) {
-        task.set("status", task.get("type") === "video" ? "transferring" : "posting");
+        task.set("status", "posting");
         return _this.socket.emit("uploadTask", {
           fbAccessToken: FB.getAuthResponse().accessToken,
           taskPath: task.get("path")

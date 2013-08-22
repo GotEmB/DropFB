@@ -72,19 +72,19 @@ io.sockets.on "connection", (socket) ->
 			si = undefined
 			r1.on "response", (response) ->
 				io.sockets.clients().filter((x) -> x.userId is socket.userId).forEach (x) -> x.emit "transferring", taskPath: taskPath
-				fileSize = Number response.Headers["content-length"]
-				oldProgress =
-					download: 0
-					upload: 0
+				console.log response
+				fileSize = Number response.headers["content-length"]
+				oldProgress = download: 0, upload: 0
 				si = setInterval(
 					->
 						task.downloadProgress = r1.response?.connection.socket.bytesRead / fileSize * 100
 						task.uploadProgress = r2.req.connection.socket._bytesDispatched / fileSize * 100
 						return if oldProgress.download is task.downloadProgress and oldProgress.upload is task.uploadProgress
+						oldProgress = download: task.downloadProgress, upload: task.uploadProgress
 						io.sockets.clients().filter((x) -> x.userId is socket.userId).forEach (x) -> x.volatile.emit "progress", taskPath: taskPath, download: task.downloadProgress, upload: task.uploadProgress
 					100
 				)
-			r1.on "response", (response) ->
+			r2.on "response", (response) ->
 				task.downloadProgress = task.uploadProgress = 0
 				io.sockets.clients().filter((x) -> x.userId is socket.userId).forEach (x) -> x.volatile.emit "progress", taskPath: taskPath, download: 0, upload: 0
 				console.log result: response
