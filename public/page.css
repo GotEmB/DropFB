@@ -29,10 +29,10 @@ textarea.form-control.caption-box[disabled] {
   margin-left: -15px;
   margin-right: -15px;
 }
-#navbar2 nav.navbar .pull-left {
+#navbar2 nav.navbar > .pull-left {
   margin-left: 15px;
 }
-#navbar2 nav.navbar .pull-right {
+#navbar2 nav.navbar > .pull-right {
   margin-right: 15px;
 }
 #navbar2.affix {
@@ -333,6 +333,11 @@ ul.dropdown-menu li.selected a {
   color: #fff;
   text-decoration: none;
   background-color: #428bca;
+}
+@media (max-width: 767px) {
+  .jumbotron p {
+    font-size: 0.8em;
+  }
 }
 @-moz-keyframes cloudPulse {
   0% {
