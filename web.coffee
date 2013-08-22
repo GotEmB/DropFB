@@ -36,20 +36,20 @@ io.sockets.on "connection", (socket) ->
 
 	socket.on "removeTask", ({taskPath}, callback) ->
 		return callback success: false unless socket.userId?
-		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath and x.status isnt "posting"
+		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath and x.status not in ["posting", "transferring"]
 		currentTasks[socket.userId] = currentTasks[socket.userId].filter (x) -> x.path isnt taskPath
 		callback success: true
 		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "removeTask", taskPath: taskPath
 
 	socket.on "captionChanged", ({taskPath, caption}) ->
 		return unless socket.userId?
-		return unless currentTasks[socket.userId].some (x) -> x.path is taskPath and x.status not in ["posting", "post_success", "post_failure"]
+		return unless currentTasks[socket.userId].some (x) -> x.path is taskPath and x.status not in ["posting", "post_success", "post_failure", "transferring"]
 		currentTasks[socket.userId].filter((x) -> x.path is taskPath)[0].caption = caption
 		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "captionChanged", taskPath: taskPath, caption: caption
 
 	socket.on "uploadTask", ({taskPath, fbAccessToken, albumId, delay}, callback) ->
 		return callback success: false unless socket.userId?
-		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath
+		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath and x.status not in ["posting", "post_success", "post_failure", "transferring"]
 		task = currentTasks[socket.userId].filter((x) -> x.path is taskPath)[0]
 		task.status = "posting"
 		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "posting", taskPath: taskPath
@@ -95,7 +95,7 @@ io.sockets.on "connection", (socket) ->
 
 	socket.on "failureAck", ({taskPath}, callback) ->
 		return callback success: false unless socket.userId?
-		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath
+		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath and x.status is "post_failure"
 		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "failureAck", taskPath: taskPath
 
 server.listen (port = process.env.PORT ? 5080), -> console.log "Listening on port #{port}"

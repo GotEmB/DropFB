@@ -84,7 +84,8 @@ io.sockets.on("connection", function(socket) {
       });
     }
     if (!currentTasks[socket.userId].some(function(x) {
-      return x.path === taskPath && x.status !== "posting";
+      var _ref;
+      return x.path === taskPath && ((_ref = x.status) !== "posting" && _ref !== "transferring");
     })) {
       return callback({
         success: false
@@ -112,7 +113,7 @@ io.sockets.on("connection", function(socket) {
     }
     if (!currentTasks[socket.userId].some(function(x) {
       var _ref;
-      return x.path === taskPath && ((_ref = x.status) !== "posting" && _ref !== "post_success" && _ref !== "post_failure");
+      return x.path === taskPath && ((_ref = x.status) !== "posting" && _ref !== "post_success" && _ref !== "post_failure" && _ref !== "transferring");
     })) {
       return;
     }
@@ -137,7 +138,8 @@ io.sockets.on("connection", function(socket) {
       });
     }
     if (!currentTasks[socket.userId].some(function(x) {
-      return x.path === taskPath;
+      var _ref;
+      return x.path === taskPath && ((_ref = x.status) !== "posting" && _ref !== "post_success" && _ref !== "post_failure" && _ref !== "transferring");
     })) {
       return callback({
         success: false
@@ -263,7 +265,7 @@ io.sockets.on("connection", function(socket) {
       });
     }
     if (!currentTasks[socket.userId].some(function(x) {
-      return x.path === taskPath;
+      return x.path === taskPath && x.status === "post_failure";
     })) {
       return callback({
         success: false
