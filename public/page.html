@@ -13,14 +13,12 @@
 		<nav class="navbar navbar-fixed-top navbar-inverse" style="margin-right: 0">
 			<div class="container">
 				<div class="navbar-header">
-					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse" style="padding: 6px 9px">
+						<i class="icon-user icon-light icon-large"></i>
 					</button>
 					<a class="navbar-brand" href="#">DropFB</a>
 				</div>
-				<div class="navbar-collapse collapse navbar-responsive-collapse">
+				<div class="navbar-collapse collapse navbar-responsive-collapse" style="padding-right: 0">
 					<p class="navbar-text navbar-right" data-showif="userLoggedIn" data-bind="currentUser.name" style="display: none"></p>
 				</div>
 			</div>
@@ -52,10 +50,10 @@
 						<button id="chooseFilesBtn" class="btn btn-primary btn-lg col-lg-4 col-md-4 col-sm-6 col-xs-10" data-event-click="appContext.dbChooseFiles"><i class="icon-dropbox icon-large"></i>&nbsp;&nbsp;Choose Files</button>
 					</div>
 					<br>
-					<div id="navbar2" class="row">
+					<div id="navbar2">
 						<div class="backdrop"></div>
-						<div class="col-lg-12 col-sm-12 col-xs-12">
-							<nav class="navbar navbar-default container" data-spy="affix">
+						<div class="container">
+							<nav class="navbar navbar-default" data-spy="affix">
 								<div class="btn-toolbar pull-left">
 									<div class="btn-group" data-removeif="noTasksSelected">
 										<button class="btn btn-default" disabled><span data-bind="selectedTasksCount"></span><span class="hide-sm">&nbsp;Selected</span></button>
@@ -101,16 +99,14 @@
 									</div>
 									<div class="postingIcon" data-insertif="task.showStatus" data-addclass-success="task.post_success" data-addclass-failure="task.post_failure" data-addclass-showprogress="task.showProgress">
 										<div></div>
-										<span class="lead"><i class="icon-sign-blank"></i></span>
-										<span class="lead"><i class="icon-cloud"></i></span>
-										<span class="lead"><i class="icon-cloud-upload"></i></span>
-										<span class="lead"><i class="icon-ok-sign"></i></span>
-										<span class="lead"><i class="icon-remove-sign"></i></span>
+										<div></div>
 										<svg height="50" width="50">
 											<path data-bind-d="task.downloadPie"></path>
 											<path data-bind-d="task.uploadPie"></path>
 											<circle cx="25" cy="25" r="15"></circle>
 										</svg>
+										<i class="icon-ok"></i>
+										<i class="icon-remove"></i>
 									</div>
 								</div>
 								<div class="caption">

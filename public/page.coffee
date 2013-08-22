@@ -67,7 +67,7 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 		@accessor "post_success", -> @get("status") is "post_success"
 		@accessor "post_failure", -> @get("status") is "post_failure"
 		@accessor "showStatus", -> @get("status")?
-		@accessor "showProgress", -> @get("status") is "transferring" and @get("downloadProgress") < 99.99 and @get("uploadProgress") < 99.99
+		@accessor "showProgress", -> @get("status") is "transferring" and (@get("downloadProgress") < 99.99 or @get("uploadProgress") < 99.99)
 		@accessor "downloadPie", ->
 			p = Number @get("downloadProgress") ? 0
 			p = 99.99 if p > 99.99
@@ -110,7 +110,7 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 		@accessor "selectedTasks", -> @get("tasks")?.filter (x) -> x.get "selected"
 		@accessor "selectedTasksCount", -> @get("selectedTasks")?.length ? 0
 		@accessor "noTasksSelected", -> @get("selectedTasksCount") is 0
-		@accessor "allTasksSelected", -> @get("selectedTasksCount") is @get "tasks.length"
+		@accessor "allTasksSelected", -> @get("selectedTasksCount") is @get("tasks")?.filter((x) -> x.get "selectable").length ? 0
 		@accessor "aVideoTaskSelected", -> @get("selectedTasks")?.some (x) -> x.get "isVideo"
 		constructor: ->
 			super
@@ -176,7 +176,7 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 		unselectAllTasks: ->
 			@get("tasks").forEach (x) -> x.set "selected", false
 		selectAllTasks: ->
-			@get("tasks").forEach (x) -> x.set "selected", true
+			@get("tasks").forEach (x) -> x.set "selected", true if x.get "selectable"
 		removeSelectedTasks: ->
 			@get("selectedTasks").forEach (task) =>
 				@socket.emit "removeTask", taskPath: task.get("path"), ({success}) =>

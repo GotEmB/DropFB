@@ -64,15 +64,18 @@ io.sockets.on "connection", (socket) ->
 				delay ? 0
 			)
 		else if task.type is "video"
-			r2 = request.post "https://graph-video.facebook.com/me/videos"
+			r2 = request.post "https://graph-video.facebook.com/me/videos", (error, response, body) ->
+				callback success not (error? or body.error?)
+				task.status = unless error? or body.error? then "post_success" else "post_failure"
+				io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "uploadedTask", taskPath: taskPath, success: not (error? or body.error?)
 			form = r2.form()
 			form.append "access_token", fbAccessToken
-			form.append "name", task.caption
+			form.append "name", task.caption ? ""
 			form.append "file", r1 = request.get taskPath
 			si = undefined
 			r1.on "response", (response) ->
+				task.status = "transferring"
 				io.sockets.clients().filter((x) -> x.userId is socket.userId).forEach (x) -> x.emit "transferring", taskPath: taskPath
-				console.log response
 				fileSize = Number response.headers["content-length"]
 				oldProgress = download: 0, upload: 0
 				si = setInterval(
@@ -87,11 +90,7 @@ io.sockets.on "connection", (socket) ->
 			r2.on "response", (response) ->
 				task.downloadProgress = task.uploadProgress = 0
 				io.sockets.clients().filter((x) -> x.userId is socket.userId).forEach (x) -> x.volatile.emit "progress", taskPath: taskPath, download: 0, upload: 0
-				console.log result: response
 				clearInterval si
-				callback success: true
-				task.status = "post_success"
-				io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "uploadedTask", taskPath: taskPath, success: true
 
 
 	socket.on "failureAck", ({taskPath}, callback) ->

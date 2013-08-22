@@ -222,7 +222,7 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
     });
 
     Task.accessor("showProgress", function() {
-      return this.get("status") === "transferring" && this.get("downloadProgress") < 99.99 && this.get("uploadProgress") < 99.99;
+      return this.get("status") === "transferring" && (this.get("downloadProgress") < 99.99 || this.get("uploadProgress") < 99.99);
     });
 
     Task.accessor("downloadPie", function() {
@@ -317,7 +317,10 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
     });
 
     AppContext.accessor("allTasksSelected", function() {
-      return this.get("selectedTasksCount") === this.get("tasks.length");
+      var _ref2, _ref3;
+      return (_ref2 = this.get("selectedTasksCount") === ((_ref3 = this.get("tasks")) != null ? _ref3.filter(function(x) {
+        return x.get("selectable");
+      }).length : void 0)) != null ? _ref2 : 0;
     });
 
     AppContext.accessor("aVideoTaskSelected", function() {
@@ -525,7 +528,9 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
 
     AppContext.prototype.selectAllTasks = function() {
       return this.get("tasks").forEach(function(x) {
-        return x.set("selected", true);
+        if (x.get("selectable")) {
+          return x.set("selected", true);
+        }
       });
     };
 
