@@ -117,12 +117,14 @@ io.sockets.on "connection", (socket) ->
 
 	socket.on "failureAck", ({taskPath}, callback) ->
 		return callback success: false unless socket.userId?
-		Task.update userId: socket.userId, path: taskPath, status: "post_failure", {status: undefined}, (err, count) ->
+		Task.update userId: socket.userId, path: taskPath, status: "post_failure", {$unset: status: ""}, (err, count) ->
 			return callback: false unless count is 1
+			callback success: true
 			io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "failureAck", taskPath: taskPath
 
 mongoose.connection.once "open", ->
 	console.log "Connected to MongoDB"
-	Task.update status: $in: ["posting", "transferring"], {status: "post_failure", downloadProgress: undefined, uploadProgress: undefined}, (err, count) ->
+	Task.update status: $in: ["posting", "transferring"], {status: "post_failure", $unset: downloadProgress: 0, uploadProgress: 0}, (err, count) ->
+		console.log err if err?
 		console.log "#{count} tasks failed" if count > 0
 		server.listen (port = process.env.PORT ? 5080), -> console.log "Listening on port #{port}"

@@ -100,7 +100,7 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 					appContext.get("tasks").remove @ if success
 			else if @get "post_failure"
 				appContext.socket.emit "failureAck", taskPath: @get("path"), ({success}) =>
-					@unset "status"
+					@unset "status" if success
 		imgOnLoad: ->
 			@set "previewLoaded", true
 		captionChanged: ->

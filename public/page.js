@@ -275,7 +275,9 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
         }, function(_arg) {
           var success;
           success = _arg.success;
-          return _this.unset("status");
+          if (success) {
+            return _this.unset("status");
+          }
         });
       }
     };

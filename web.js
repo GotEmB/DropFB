@@ -350,13 +350,18 @@ io.sockets.on("connection", function(socket) {
       path: taskPath,
       status: "post_failure"
     }, {
-      status: void 0
+      $unset: {
+        status: ""
+      }
     }, function(err, count) {
       if (count !== 1) {
         return {
           callback: false
         };
       }
+      callback({
+        success: true
+      });
       return io.sockets.clients().filter(function(x) {
         return x !== socket && x.userId === socket.userId;
       }).forEach(function(x) {
@@ -376,10 +381,15 @@ mongoose.connection.once("open", function() {
     }
   }, {
     status: "post_failure",
-    downloadProgress: void 0,
-    uploadProgress: void 0
+    $unset: {
+      downloadProgress: 0,
+      uploadProgress: 0
+    }
   }, function(err, count) {
     var port, _ref;
+    if (err != null) {
+      console.log(err);
+    }
     if (count > 0) {
       console.log("" + count + " tasks failed");
     }
