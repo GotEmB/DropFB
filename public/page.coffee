@@ -91,6 +91,7 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 			@set "selected", false
 			@set "previewLoaded", false
 			@observe "selectable", (value) -> @set "selected", false unless value
+			@set "oldCaption", @get "caption"
 		toggleSelection: ->
 			if @get "selectable"
 				@set "selected", not @get "selected"
@@ -103,7 +104,9 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 		imgOnLoad: ->
 			@set "previewLoaded", true
 		captionChanged: ->
+			return if @get("caption") is @get "oldCaption"
 			appContext.socket.emit "captionChanged", taskPath: @get("path"), caption: @get "caption"
+			@set "oldCaption", @get "caption"
 
 	class AppContext extends Batman.Model
 		@accessor "userLoggedIn", -> @get("currentUser") instanceof User

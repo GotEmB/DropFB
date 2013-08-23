@@ -2,6 +2,22 @@ express = require "express"
 http = require "http"
 socket_io = require "socket.io"
 request = require "request"
+mongoose = require "mongoose"
+
+mongoose.connect process.env.MONGODBSTR
+mongoose.connection.once "error", ->
+	console.error arguments
+	process.exit 1
+
+Task = mongoose.model "Task",
+	userId: String
+	path: String
+	thumbnail: String
+	type: String
+	caption: String
+	status: String
+	downloadProgress: Number
+	uploadProgress: Number
 
 currentTasks = {}
 
@@ -25,77 +41,88 @@ io.set "log level", 0
 io.sockets.on "connection", (socket) ->
 
 	socket.on "handshake", ({userId}, callback) ->
-		callback tasks: currentTasks[socket.userId = userId] ?= []
+		socket.userId = userId
+		Task.find userId: socket.userId, (err, tasks) ->
+			callback tasks: tasks
 
 	socket.on "addTask", ({task}, callback) ->
 		return callback success: false unless socket.userId?
-		return callback success: false if currentTasks[socket.userId].some (x) -> x.path is task.path
-		currentTasks[socket.userId].push task
-		callback success: true
-		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "addTask", task: task
+		Task.count userId: socket.userId, path: task.path, (err, count) ->
+			return callback success: false unless count is 0
+			task = new Task task
+			task.userId = socket.userId
+			task.save (err, task) ->
+				callback success: true
+				io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "addTask", task: task
 
 	socket.on "removeTask", ({taskPath}, callback) ->
 		return callback success: false unless socket.userId?
-		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath and x.status not in ["posting", "transferring"]
-		currentTasks[socket.userId] = currentTasks[socket.userId].filter (x) -> x.path isnt taskPath
-		callback success: true
-		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "removeTask", taskPath: taskPath
+		Task.remove userId: socket.userId, path: taskPath, status: $nin: ["posting", "transferring"], (err, count) ->
+			return callback success: false unless count is 1
+			callback success: true
+			io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "removeTask", taskPath: taskPath
 
 	socket.on "captionChanged", ({taskPath, caption}) ->
 		return unless socket.userId?
-		return unless currentTasks[socket.userId].some (x) -> x.path is taskPath and x.status not in ["posting", "post_success", "post_failure", "transferring"]
-		currentTasks[socket.userId].filter((x) -> x.path is taskPath)[0].caption = caption
-		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "captionChanged", taskPath: taskPath, caption: caption
+		Task.update userId: socket.userId, path: taskPath, status: $nin: ["posting", "post_success", "post_failure", "transferring"], {caption: caption}, (err, count) ->
+			return unless count is 1
+			io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "captionChanged", taskPath: taskPath, caption: caption
 
 	socket.on "uploadTask", ({taskPath, fbAccessToken, albumId, delay}, callback) ->
 		return callback success: false unless socket.userId?
-		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath and x.status not in ["posting", "post_success", "post_failure", "transferring"]
-		task = currentTasks[socket.userId].filter((x) -> x.path is taskPath)[0]
-		task.status = "posting"
-		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "posting", taskPath: taskPath
-		if task.type is "photo"
-			setTimeout(
-				->
-					request.post "https://graph.facebook.com/#{albumId ? socket.userId}/photos", form: access_token: fbAccessToken, url: taskPath, name: task.caption, (error, response, body) ->
-						body = try JSON.parse body catch then body
-						callback success: not (error? or body.error?)
-						task.status = unless error? or body.error? then "post_success" else "post_failure"
-						io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "uploadedTask", taskPath: taskPath, success: not (error? or body.error?)
-				delay ? 0
-			)
-		else if task.type is "video"
-			r2 = request.post "https://graph-video.facebook.com/me/videos", (error, response, body) ->
-				callback success not (error? or body.error?)
-				task.status = unless error? or body.error? then "post_success" else "post_failure"
-				io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "uploadedTask", taskPath: taskPath, success: not (error? or body.error?)
-			form = r2.form()
-			form.append "access_token", fbAccessToken
-			form.append "name", task.caption ? ""
-			form.append "file", r1 = request.get taskPath
-			si = undefined
-			r1.on "response", (response) ->
-				task.status = "transferring"
-				io.sockets.clients().filter((x) -> x.userId is socket.userId).forEach (x) -> x.emit "transferring", taskPath: taskPath
-				fileSize = Number response.headers["content-length"]
-				oldProgress = download: 0, upload: 0
-				si = setInterval(
+		Task.findOneAndUpdate userId: socket.userId, path: taskPath, status: $nin: ["posting", "post_success", "post_failure", "transferring"], {status: "posting"}, (err, task) ->
+			return callback success: false unless task?
+			io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "posting", taskPath: taskPath
+			if task.type is "photo"
+				setTimeout(
 					->
-						task.downloadProgress = r1.response?.connection.socket.bytesRead / fileSize * 100
-						task.uploadProgress = r2.req.connection.socket._bytesDispatched / fileSize * 100
-						return if oldProgress.download is task.downloadProgress and oldProgress.upload is task.uploadProgress
-						oldProgress = download: task.downloadProgress, upload: task.uploadProgress
-						io.sockets.clients().filter((x) -> x.userId is socket.userId).forEach (x) -> x.volatile.emit "progress", taskPath: taskPath, download: task.downloadProgress, upload: task.uploadProgress
-					100
+						request.post "https://graph.facebook.com/#{albumId ? socket.userId}/photos", form: access_token: fbAccessToken, url: taskPath, name: task.caption, (error, response, body) ->
+							body = try JSON.parse body catch then body
+							Task.update userId: socket.userId, path: taskPath, {status: unless error? or body.error? then "post_success" else "post_failure"}, (err, count) ->
+								callback success: not (error? or body.error?)
+								io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "uploadedTask", taskPath: taskPath, success: not (error? or body.error?)
+					delay ? 0
 				)
-			r2.on "response", (response) ->
-				task.downloadProgress = task.uploadProgress = 0
-				io.sockets.clients().filter((x) -> x.userId is socket.userId).forEach (x) -> x.volatile.emit "progress", taskPath: taskPath, download: 0, upload: 0
-				clearInterval si
+			else if task.type is "video"
+				r2 = request.post "https://graph-video.facebook.com/me/videos", (error, response, body) ->
+					body = try JSON.parse body catch then body
+					Task.update userId: socket.userId, path: taskPath, {status: unless error? or body.error? then "post_success" else "post_failure"}, (err, count) ->
+						callback success: not (error? or body.error?)
+						io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "uploadedTask", taskPath: taskPath, success: not (error? or body.error?)
+				form = r2.form()
+				form.append "access_token", fbAccessToken
+				form.append "title", task.caption ? ""
+				form.append "file", r1 = request.get taskPath
+				si = undefined
+				r1.on "response", (response) ->
+					Task.update userId: socket.userId, path: taskPath, {status: "transferring"}, (err, count) ->
+						io.sockets.clients().filter((x) -> x.userId is socket.userId).forEach (x) -> x.emit "transferring", taskPath: taskPath
+						fileSize = Number response.headers["content-length"]
+						oldProgress = download: 0, upload: 0
+						si = setInterval(
+							->
+								downloadProgress = r1.response?.connection.socket.bytesRead / fileSize * 100
+								uploadProgress = r2.req.connection.socket._bytesDispatched / fileSize * 100
+								return if oldProgress.download is downloadProgress and oldProgress.upload is uploadProgress
+								oldProgress = download: downloadProgress, upload: uploadProgress
+								Task.update userId: socket.userId, path: taskPath, {downloadProgress: downloadProgress, uploadProgress: uploadProgress}, (err, count) ->
+								io.sockets.clients().filter((x) -> x.userId is socket.userId).forEach (x) -> x.volatile.emit "progress", taskPath: taskPath, download: downloadProgress, upload: uploadProgress
+							100
+						)
+				r2.on "response", (response) ->
+					Task.update userId: socket.userId, path: taskPath, {downloadProgress: 0, uploadProgress: 0}, (err, count) ->
+					io.sockets.clients().filter((x) -> x.userId is socket.userId).forEach (x) -> x.volatile.emit "progress", taskPath: taskPath, download: 0, upload: 0
+					clearInterval si
 
 
 	socket.on "failureAck", ({taskPath}, callback) ->
 		return callback success: false unless socket.userId?
-		return callback success: false unless currentTasks[socket.userId].some (x) -> x.path is taskPath and x.status is "post_failure"
-		io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "failureAck", taskPath: taskPath
+		Task.update userId: socket.userId, path: taskPath, status: "post_failure", {status: undefined}, (err, count) ->
+			return callback: false unless count is 1
+			io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "failureAck", taskPath: taskPath
 
-server.listen (port = process.env.PORT ? 5080), -> console.log "Listening on port #{port}"
+mongoose.connection.once "open", ->
+	console.log "Connected to MongoDB"
+	Task.update status: $in: ["posting", "transferring"], {status: "post_failure", downloadProgress: undefined, uploadProgress: undefined}, (err, count) ->
+		console.log "#{count} tasks failed" if count > 0
+		server.listen (port = process.env.PORT ? 5080), -> console.log "Listening on port #{port}"

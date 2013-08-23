@@ -252,6 +252,7 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
           return this.set("selected", false);
         }
       });
+      this.set("oldCaption", this.get("caption"));
     }
 
     Task.prototype.toggleSelection = function() {
@@ -284,10 +285,14 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
     };
 
     Task.prototype.captionChanged = function() {
-      return appContext.socket.emit("captionChanged", {
+      if (this.get("caption") === this.get("oldCaption")) {
+        return;
+      }
+      appContext.socket.emit("captionChanged", {
         taskPath: this.get("path"),
         caption: this.get("caption")
       });
+      return this.set("oldCaption", this.get("caption"));
     };
 
     return Task;
