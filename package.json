@@ -1,0 +1,29 @@
+{
+  "name": "DropFB",
+  "version": "0.0.1",
+  "description": "Dropbox <-> Facebook",
+  "main": "web.js",
+  "dependencies": {
+    "express": "~3.3.4",
+    "mongoose": "~3.6.17",
+    "socket.io": "~0.9.16",
+    "request": "~2.25.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GotEmB/DropFB.git"
+  },
+  "keywords": [
+    "Dropbox",
+    "Facebook"
+  ],
+  "author": "Gautham Badhrinathan",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/GotEmB/DropFB/issues"
+  }
+}
