@@ -58,7 +58,11 @@ server = http.createServer(expressServer);
 
 io = socket_io.listen(server);
 
-io.set("log level", 0);
+io.configure(function() {
+  io.set("log level", 0);
+  io.set("transports", ["xhr-polling"]);
+  return io.set("polling duration", 10);
+});
 
 io.sockets.on("connection", function(socket) {
   socket.on("handshake", function(_arg, callback) {
@@ -385,6 +389,8 @@ mongoose.connection.once("open", function() {
       downloadProgress: 0,
       uploadProgress: 0
     }
+  }, {
+    multi: true
   }, function(err, count) {
     var port, _ref;
     if (err != null) {

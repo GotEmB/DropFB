@@ -37,7 +37,12 @@ expressServer.configure ->
 server = http.createServer expressServer
 
 io = socket_io.listen server
-io.set "log level", 0
+io.configure ->
+
+	io.set "log level", 0
+	io.set "transports", ["xhr-polling"]
+	io.set "polling duration", 10
+
 io.sockets.on "connection", (socket) ->
 
 	socket.on "handshake", ({userId}, callback) ->
@@ -124,7 +129,7 @@ io.sockets.on "connection", (socket) ->
 
 mongoose.connection.once "open", ->
 	console.log "Connected to MongoDB"
-	Task.update status: $in: ["posting", "transferring"], {status: "post_failure", $unset: downloadProgress: 0, uploadProgress: 0}, (err, count) ->
+	Task.update status: $in: ["posting", "transferring"], {status: "post_failure", $unset: downloadProgress: 0, uploadProgress: 0}, multi: true, (err, count) ->
 		console.log err if err?
 		console.log "#{count} tasks failed" if count > 0
 		server.listen (port = process.env.PORT ? 5080), -> console.log "Listening on port #{port}"
