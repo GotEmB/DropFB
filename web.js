@@ -318,7 +318,8 @@ io.sockets.on("connection", function(socket) {
                 });
               });
               if (downloadProgress - uploadProgress > 25 * 1 << 20) {
-                return r1.pause();
+                r1.pause();
+                return form.resume();
               } else if (downloadProgress - uploadProgress < 5 * 1 << 20) {
                 return r1.resume();
               }

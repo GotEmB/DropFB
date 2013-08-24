@@ -115,6 +115,7 @@ io.sockets.on "connection", (socket) ->
 								io.sockets.clients().filter((x) -> x.userId is socket.userId).forEach (x) -> x.volatile.emit "progress", taskPath: taskPath, download: downloadProgress, upload: uploadProgress
 								if downloadProgress - uploadProgress > 25 * 1 << 20
 									r1.pause()
+									form.resume()
 								else if downloadProgress - uploadProgress < 5 * 1 << 20
 									r1.resume()
 							100
