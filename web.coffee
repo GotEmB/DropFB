@@ -24,6 +24,7 @@ currentTasks = {}
 expressServer = express()
 expressServer.configure ->
 
+	expressServer.use express.compress()
 	expressServer.use express.bodyParser()
 	expressServer.use (req, res, next) ->
 		req.url =

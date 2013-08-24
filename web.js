@@ -34,6 +34,7 @@ currentTasks = {};
 expressServer = express();
 
 expressServer.configure(function() {
+  expressServer.use(express.compress());
   expressServer.use(express.bodyParser());
   expressServer.use(function(req, res, next) {
     req.url = (function() {

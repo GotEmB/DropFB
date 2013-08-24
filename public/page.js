@@ -6,7 +6,7 @@ var appContext, constants,
 
 require.config({
   paths: {
-    jquery: "jquery/jquery-2.0.3.min",
+    jquery: "//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min",
     batman: "batmanjs/batman",
     bootstrap: "//netdna.bootstrapcdn.com/bootstrap/3.0.0-wip/js/bootstrap.min",
     facebook: "//connect.facebook.net/en_US/all",
