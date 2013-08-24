@@ -109,7 +109,7 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 			@set "oldCaption", @get "caption"
 
 	class AppContext extends Batman.Model
-		@accessor "pageLoading", -> @get("appConnecting") and @get "resourcesLoading"
+		@accessor "pageLoading", -> @get("appConnecting") or @get "resourcesLoading"
 		@accessor "userLoggedIn", -> @get("currentUser") instanceof User
 		@accessor "selectedTasks", -> @get("tasks")?.filter (x) -> x.get "selected"
 		@accessor "selectedTasksCount", -> @get("selectedTasks")?.length ? 0

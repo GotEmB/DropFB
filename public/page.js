@@ -304,7 +304,7 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
     __extends(AppContext, _super);
 
     AppContext.accessor("pageLoading", function() {
-      return this.get("appConnecting") && this.get("resourcesLoading");
+      return this.get("appConnecting") || this.get("resourcesLoading");
     });
 
     AppContext.accessor("userLoggedIn", function() {
