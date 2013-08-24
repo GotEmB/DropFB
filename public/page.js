@@ -30,7 +30,8 @@ require.config({
     socket_io: {
       exports: "io"
     }
-  }
+  },
+  waitSeconds: 30
 });
 
 constants = {
