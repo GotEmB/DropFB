@@ -291,9 +291,9 @@ io.sockets.on("connection", function(socket) {
               upload: 0
             };
             return si = setInterval(function() {
-              var downloadProgress, uploadProgress, _ref1;
-              downloadProgress = ((_ref1 = r1.response) != null ? _ref1.connection.socket.bytesRead : void 0) / fileSize * 100;
-              uploadProgress = r2.req.connection.socket._bytesDispatched / fileSize * 100;
+              var downloadProgress, uploadProgress, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7;
+              downloadProgress = ((_ref1 = (_ref2 = r1.response) != null ? (_ref3 = _ref2.connection) != null ? _ref3.socket.bytesRead : void 0 : void 0) != null ? _ref1 : 0) / fileSize * 100;
+              uploadProgress = ((_ref4 = (_ref5 = r2.req) != null ? (_ref6 = _ref5.connection) != null ? (_ref7 = _ref6.socket) != null ? _ref7._bytesDispatched : void 0 : void 0 : void 0) != null ? _ref4 : 0) / fileSize * 100;
               if (oldProgress.download === downloadProgress && oldProgress.upload === uploadProgress) {
                 return;
               }

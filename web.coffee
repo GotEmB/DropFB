@@ -107,8 +107,8 @@ io.sockets.on "connection", (socket) ->
 						oldProgress = download: 0, upload: 0
 						si = setInterval(
 							->
-								downloadProgress = r1.response?.connection.socket.bytesRead / fileSize * 100
-								uploadProgress = r2.req.connection.socket._bytesDispatched / fileSize * 100
+								downloadProgress = (r1.response?.connection?.socket.bytesRead ? 0) / fileSize * 100
+								uploadProgress = (r2.req?.connection?.socket?._bytesDispatched ? 0) / fileSize * 100
 								return if oldProgress.download is downloadProgress and oldProgress.upload is uploadProgress
 								oldProgress = download: downloadProgress, upload: uploadProgress
 								Task.update userId: socket.userId, path: taskPath, {downloadProgress: downloadProgress, uploadProgress: uploadProgress}, (err, count) ->
