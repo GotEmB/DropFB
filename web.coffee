@@ -107,16 +107,16 @@ io.sockets.on "connection", (socket) ->
 						oldProgress = download: 0, upload: 0
 						si = setInterval(
 							->
-								downloadProgress = (r1.response?.connection?.socket.bytesRead ? 0) / fileSize * 100
-								uploadProgress = (r2.req?.connection?.socket?._bytesDispatched ? 0) / fileSize * 100
+								downloadProgress = (dp = r1.response?.connection?.socket.bytesRead ? 0) / fileSize * 100
+								uploadProgress = (up = r2.req?.connection?.socket?._bytesDispatched ? 0) / fileSize * 100
 								return if oldProgress.download is downloadProgress and oldProgress.upload is uploadProgress
 								oldProgress = download: downloadProgress, upload: uploadProgress
 								Task.update userId: socket.userId, path: taskPath, {downloadProgress: downloadProgress, uploadProgress: uploadProgress}, (err, count) ->
 								io.sockets.clients().filter((x) -> x.userId is socket.userId).forEach (x) -> x.volatile.emit "progress", taskPath: taskPath, download: downloadProgress, upload: uploadProgress
-								if downloadProgress - uploadProgress > 25 * 1 << 20
+								if dp - up > 25 * 1 << 20
 									r1.pause()
 									form.resume()
-								else if downloadProgress - uploadProgress < 5 * 1 << 20
+								else if dp - up < 5 * 1 << 20
 									r1.resume()
 							100
 						)

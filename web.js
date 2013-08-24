@@ -291,9 +291,9 @@ io.sockets.on("connection", function(socket) {
               upload: 0
             };
             return si = setInterval(function() {
-              var downloadProgress, uploadProgress, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7;
-              downloadProgress = ((_ref1 = (_ref2 = r1.response) != null ? (_ref3 = _ref2.connection) != null ? _ref3.socket.bytesRead : void 0 : void 0) != null ? _ref1 : 0) / fileSize * 100;
-              uploadProgress = ((_ref4 = (_ref5 = r2.req) != null ? (_ref6 = _ref5.connection) != null ? (_ref7 = _ref6.socket) != null ? _ref7._bytesDispatched : void 0 : void 0 : void 0) != null ? _ref4 : 0) / fileSize * 100;
+              var downloadProgress, dp, up, uploadProgress, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7;
+              downloadProgress = (dp = (_ref1 = (_ref2 = r1.response) != null ? (_ref3 = _ref2.connection) != null ? _ref3.socket.bytesRead : void 0 : void 0) != null ? _ref1 : 0) / fileSize * 100;
+              uploadProgress = (up = (_ref4 = (_ref5 = r2.req) != null ? (_ref6 = _ref5.connection) != null ? (_ref7 = _ref6.socket) != null ? _ref7._bytesDispatched : void 0 : void 0 : void 0) != null ? _ref4 : 0) / fileSize * 100;
               if (oldProgress.download === downloadProgress && oldProgress.upload === uploadProgress) {
                 return;
               }
@@ -317,10 +317,10 @@ io.sockets.on("connection", function(socket) {
                   upload: uploadProgress
                 });
               });
-              if (downloadProgress - uploadProgress > 25 * 1 << 20) {
+              if (dp - up > 25 * 1 << 20) {
                 r1.pause();
                 return form.resume();
-              } else if (downloadProgress - uploadProgress < 5 * 1 << 20) {
+              } else if (dp - up < 5 * 1 << 20) {
                 return r1.resume();
               }
             }, 100);
