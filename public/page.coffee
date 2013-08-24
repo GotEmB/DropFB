@@ -109,6 +109,7 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 			@set "oldCaption", @get "caption"
 
 	class AppContext extends Batman.Model
+		@accessor "pageLoading", -> @get("appConnecting") and @get "resourcesLoading"
 		@accessor "userLoggedIn", -> @get("currentUser") instanceof User
 		@accessor "selectedTasks", -> @get("tasks")?.filter (x) -> x.get "selected"
 		@accessor "selectedTasksCount", -> @get("selectedTasks")?.length ? 0
@@ -117,7 +118,8 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 		@accessor "aVideoTaskSelected", -> @get("selectedTasks")?.some (x) -> x.get "isVideo"
 		constructor: ->
 			super
-			@set "pageLoading", "true"
+			@set "appConnecting", true
+			@set "resourcesLoading", true
 			FB.init appId: "364692580326195", status: true
 			Dropbox.appKey = "wy7kcrp5mm8debj"
 			FB.Event.subscribe "auth.authResponseChange", @fbLoginStatusChanged = ({status: fbStatus, authResponse: fbAuthResponse}) =>
@@ -136,7 +138,7 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 									@set "currentUser", new User name: name, userId: fbAuthResponse.userID
 									@set "tasks", new Batman.Set
 									@get("tasks").add (new Task task for task in tasks)...
-									@set "pageLoading", false
+									@set "appConnecting", false
 									delete @fbLoginStatusChanged.inProgress
 						@socket.on "addTask", ({task}) =>
 							@get("tasks").add new Task task
@@ -159,7 +161,7 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 					else
 						@unset "currentUser"
 						@socket?.disconnect()
-						@set "pageLoading", false
+						@set "appConnecting", false
 						@unset "tasks"
 						@unset "albums"
 						delete @fbLoginStatusChanged.inProgress
@@ -200,3 +202,4 @@ require ["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], (
 
 	$ ->
 		$("#navbar2").affix offset: top: 65
+		appContext.set "resourcesLoading", false

@@ -303,6 +303,10 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
   AppContext = (function(_super) {
     __extends(AppContext, _super);
 
+    AppContext.accessor("pageLoading", function() {
+      return this.get("appConnecting") && this.get("resourcesLoading");
+    });
+
     AppContext.accessor("userLoggedIn", function() {
       return this.get("currentUser") instanceof User;
     });
@@ -340,7 +344,8 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
     function AppContext() {
       var _this = this;
       AppContext.__super__.constructor.apply(this, arguments);
-      this.set("pageLoading", "true");
+      this.set("appConnecting", true);
+      this.set("resourcesLoading", true);
       FB.init({
         appId: "364692580326195",
         status: true
@@ -403,7 +408,7 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
                     }
                     return _results;
                   })());
-                  _this.set("pageLoading", false);
+                  _this.set("appConnecting", false);
                   return delete _this.fbLoginStatusChanged.inProgress;
                 });
               });
@@ -471,7 +476,7 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
             if ((_ref3 = _this.socket) != null) {
               _ref3.disconnect();
             }
-            _this.set("pageLoading", false);
+            _this.set("appConnecting", false);
             _this.unset("tasks");
             _this.unset("albums");
             return delete _this.fbLoginStatusChanged.inProgress;
@@ -594,10 +599,11 @@ require(["jquery", "Batman", "facebook", "dropbox", "socket_io", "bootstrap"], f
   })(Batman.App);
   DropFB.run();
   return $(function() {
-    return $("#navbar2").affix({
+    $("#navbar2").affix({
       offset: {
         top: 65
       }
     });
+    return appContext.set("resourcesLoading", false);
   });
 });
