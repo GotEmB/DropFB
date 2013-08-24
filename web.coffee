@@ -3,6 +3,8 @@ http = require "http"
 socket_io = require "socket.io"
 request = require "request"
 mongoose = require "mongoose"
+fs = require "fs"
+crypto = require "crypto"
 
 mongoose.connect process.env.MONGODBSTR
 mongoose.connection.once "error", ->
@@ -90,6 +92,7 @@ io.sockets.on "connection", (socket) ->
 					delay ? 0
 				)
 			else if task.type is "video"
+				(r1 = request.get taskPath).pipe fs.createWriteStream fn = crypto.createHash('md5').update(taskPath + "--S@|t--gv6g8").digest("hex")
 				r2 = request.post "https://graph-video.facebook.com/me/videos", (error, response, body) ->
 					body = try JSON.parse body catch then body
 					Task.update userId: socket.userId, path: taskPath, {status: unless error? or body.error? then "post_success" else "post_failure"}, (err, count) ->
@@ -98,7 +101,7 @@ io.sockets.on "connection", (socket) ->
 				form = r2.form()
 				form.append "access_token", fbAccessToken
 				form.append "title", task.caption ? ""
-				form.append "file", r1 = request.get taskPath
+				form.append "file", fs.createReadStream fn
 				si = undefined
 				r1.on "response", (response) ->
 					Task.update userId: socket.userId, path: taskPath, {status: "transferring"}, (err, count) ->
