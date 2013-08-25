@@ -53,13 +53,10 @@ io.sockets.on "connection", (socket) ->
 
 	socket.on "addTask", ({task}, callback) ->
 		return callback success: false unless socket.userId?
-		Task.count userId: socket.userId, path: task.path, (err, count) ->
-			return callback success: false unless count is 0
-			task = new Task task
-			task.userId = socket.userId
-			task.save (err, task) ->
-				callback success: true
-				io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "addTask", task: task
+		Task.update userId: socket.userId, path: task.path, {$setOnInsert: task}, (err, count, response) ->
+			return callback success: false if response.updatedExisting
+			callback success: true
+			io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "addTask", task: task
 
 	socket.on "removeTask", ({taskPath}, callback) ->
 		return callback success: false unless socket.userId?
@@ -113,7 +110,7 @@ io.sockets.on "connection", (socket) ->
 								oldProgress = download: downloadProgress, upload: uploadProgress
 								Task.update userId: socket.userId, path: taskPath, {downloadProgress: downloadProgress, uploadProgress: uploadProgress}, (err, count) ->
 								io.sockets.clients().filter((x) -> x.userId is socket.userId).forEach (x) -> x.volatile.emit "progress", taskPath: taskPath, download: downloadProgress, upload: uploadProgress
-								if dp - up > 25 * 1 << 20
+								if dp - up > 5 * 1 << 20
 									r1.pause()
 									form.resume()
 								else if dp - up < 5 * 1 << 20

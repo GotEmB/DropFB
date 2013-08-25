@@ -86,27 +86,25 @@ io.sockets.on("connection", function(socket) {
         success: false
       });
     }
-    return Task.count({
+    return Task.update({
       userId: socket.userId,
       path: task.path
-    }, function(err, count) {
-      if (count !== 0) {
+    }, {
+      $setOnInsert: task
+    }, function(err, count, response) {
+      if (response.updatedExisting) {
         return callback({
           success: false
         });
       }
-      task = new Task(task);
-      task.userId = socket.userId;
-      return task.save(function(err, task) {
-        callback({
-          success: true
-        });
-        return io.sockets.clients().filter(function(x) {
-          return x !== socket && x.userId === socket.userId;
-        }).forEach(function(x) {
-          return x.emit("addTask", {
-            task: task
-          });
+      callback({
+        success: true
+      });
+      return io.sockets.clients().filter(function(x) {
+        return x !== socket && x.userId === socket.userId;
+      }).forEach(function(x) {
+        return x.emit("addTask", {
+          task: task
         });
       });
     });
@@ -317,7 +315,7 @@ io.sockets.on("connection", function(socket) {
                   upload: uploadProgress
                 });
               });
-              if (dp - up > 25 * 1 << 20) {
+              if (dp - up > 5 * 1 << 20) {
                 r1.pause();
                 return form.resume();
               } else if (dp - up < 5 * 1 << 20) {
