@@ -91,8 +91,10 @@ io.sockets.on("connection", function(socket) {
       path: task.path
     }, {
       $setOnInsert: task
+    }, {
+      upsert: true
     }, function(err, count, response) {
-      if (response.updatedExisting) {
+      if (response.updatedExisting || count !== 1) {
         return callback({
           success: false
         });

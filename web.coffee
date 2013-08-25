@@ -53,8 +53,8 @@ io.sockets.on "connection", (socket) ->
 
 	socket.on "addTask", ({task}, callback) ->
 		return callback success: false unless socket.userId?
-		Task.update userId: socket.userId, path: task.path, {$setOnInsert: task}, (err, count, response) ->
-			return callback success: false if response.updatedExisting
+		Task.update userId: socket.userId, path: task.path, {$setOnInsert: task}, upsert: true, (err, count, response) ->
+			return callback success: false if response.updatedExisting or count isnt 1
 			callback success: true
 			io.sockets.clients().filter((x) -> x isnt socket and x.userId is socket.userId).forEach (x) -> x.emit "addTask", task: task
 
