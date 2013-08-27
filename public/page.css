@@ -1,0 +1,406 @@
+body {
+  padding-top: 70px;
+}
+textarea.form-control.caption-box {
+  border: none;
+  -webkit-border-radius: 0;
+  border-radius: 0;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  outline: none;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  padding: 0;
+  background-color: transparent;
+  font-weight: 500;
+  resize: none;
+  font-size: 14px;
+  line-height: 20px;
+  height: 40px;
+}
+textarea.form-control.caption-box[readonly],
+textarea.form-control.caption-box[disabled] {
+  cursor: default;
+  background-color: transparent;
+}
+#navbar2 {
+  position: relative;
+}
+#navbar2 nav.navbar {
+  margin-left: -15px;
+  margin-right: -15px;
+}
+#navbar2 nav.navbar > .pull-left {
+  margin-left: 15px;
+}
+#navbar2 nav.navbar > .pull-right {
+  margin-right: 15px;
+}
+#navbar2.affix {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 70px;
+  z-index: 100;
+  margin-left: 0;
+  margin-right: 0;
+}
+#navbar2.affix + div {
+  margin-top: 70px;
+}
+#navbar2.affix > .backdrop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -20px;
+  bottom: 0;
+  background-color: #fff;
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #fff), color-stop(0.5, #fff), color-stop(1, rgba(255,255,255,0)));
+  background: -webkit-linear-gradient(top, #fff 0, #fff 50px, rgba(255,255,255,0) 100%);
+  background: -moz-linear-gradient(top, #fff 0, #fff 50px, rgba(255,255,255,0) 100%);
+  background: -o-linear-gradient(top, #fff 0, #fff 50px, rgba(255,255,255,0) 100%);
+  background: -ms-linear-gradient(top, #fff 0, #fff 50px, rgba(255,255,255,0) 100%);
+  background: linear-gradient(top, #fff 0, #fff 50px, rgba(255,255,255,0) 100%);
+}
+#navbar2.affix nav.navbar {
+  margin-left: 0;
+  margin-right: 0;
+}
+@media (max-width: 767px) {
+  .hide-sm {
+    display: none;
+  }
+}
+.icon-inline.icon-stack {
+  width: 1em;
+  height: 1em;
+  font-size: 0.8em;
+  line-height: 1em;
+  vertical-align: -12%;
+}
+.thumbnail.task {
+  text-align: center;
+  -webkit-transition: margin 0, border-width 0;
+  -moz-transition: margin 0, border-width 0;
+  -o-transition: margin 0, border-width 0;
+  -ms-transition: margin 0, border-width 0;
+  transition: margin 0, border-width 0;
+  position: relative;
+}
+.thumbnail.task.selectable:hover {
+  border-color: #428bca;
+}
+.thumbnail.task.selectable:hover .photoContainer {
+  cursor: pointer;
+}
+.thumbnail.task.selected {
+  border-color: #428bca;
+  border-width: 2px;
+  padding: 3px;
+}
+.thumbnail.task .photoContainer {
+  position: relative;
+  width: 100%;
+  padding-bottom: 75%;
+}
+.thumbnail.task .photoContainer img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.thumbnail.task .photoContainer .placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #eee;
+}
+.thumbnail.task .photoContainer .placeholder span.lead {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  font-size: 5em;
+  line-height: 1em;
+  margin-top: -0.5em;
+  color: #aaa;
+}
+.thumbnail.task .photoContainer .postingIcon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+}
+.thumbnail.task .photoContainer .postingIcon div:nth-of-type(1) {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(200,200,200,0.5);
+}
+.thumbnail.task .photoContainer .postingIcon div:nth-of-type(2) {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -30px;
+  margin-left: -30px;
+  height: 60px;
+  width: 60px;
+  background-color: rgba(0,0,0,0.8);
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+}
+.thumbnail.task .photoContainer .postingIcon svg {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -25px;
+  margin-left: -25px;
+}
+.thumbnail.task .photoContainer .postingIcon svg circle {
+  stroke: #fff;
+  stroke-width: 2px;
+  fill: rgba(255,255,255,0);
+  -webkit-animation: cloudPulse 2s ease-in-out 0 infinite;
+  -moz-animation: cloudPulse 2s ease-in-out 0 infinite;
+  -o-animation: cloudPulse 2s ease-in-out 0 infinite;
+  -ms-animation: cloudPulse 2s ease-in-out 0 infinite;
+  animation: cloudPulse 2s ease-in-out 0 infinite;
+}
+.thumbnail.task .photoContainer .postingIcon i {
+  position: absolute;
+  display: block;
+  text-align: center;
+  top: 50%;
+  margin-top: -30px;
+  line-height: 60px;
+  width: 100%;
+  color: rgba(255,255,255,0);
+  -webkit-transform: scale(0.77);
+  -moz-transform: scale(0.77);
+  -o-transform: scale(0.77);
+  -ms-transform: scale(0.77);
+  transform: scale(0.77);
+  font-size: 28px;
+}
+.thumbnail.task .photoContainer .postingIcon.success > div:nth-of-type(2) {
+  background-color: #5cb85c;
+  -webkit-transition: background-color 250ms;
+  -moz-transition: background-color 250ms;
+  -o-transition: background-color 250ms;
+  -ms-transition: background-color 250ms;
+  transition: background-color 250ms;
+}
+.thumbnail.task .photoContainer .postingIcon.success > i:nth-of-type(1) {
+  color: #5cb85c;
+  -webkit-transform: scale(1);
+  -moz-transform: scale(1);
+  -o-transform: scale(1);
+  -ms-transform: scale(1);
+  transform: scale(1);
+  -webkit-transform-origin: center;
+  -moz-transform-origin: center;
+  -o-transform-origin: center;
+  -ms-transform-origin: center;
+  transform-origin: center;
+  -webkit-transition: color 250ms, -webkit-transform 250ms;
+  -moz-transition: color 250ms, -moz-transform 250ms;
+  -o-transition: color 250ms, -o-transform 250ms;
+  -ms-transition: color 250ms, -ms-transform 250ms;
+  transition: color 250ms, transform 250ms;
+}
+.thumbnail.task .photoContainer .postingIcon.failure > div:nth-of-type(2) {
+  background-color: #d9534f;
+  -webkit-transition: background-color 250ms;
+  -moz-transition: background-color 250ms;
+  -o-transition: background-color 250ms;
+  -ms-transition: background-color 250ms;
+  transition: background-color 250ms;
+}
+.thumbnail.task .photoContainer .postingIcon.failure > i:nth-of-type(2) {
+  color: #d9534f;
+  -webkit-transform: scale(1);
+  -moz-transform: scale(1);
+  -o-transform: scale(1);
+  -ms-transform: scale(1);
+  transform: scale(1);
+  -webkit-transform-origin: center;
+  -moz-transform-origin: center;
+  -o-transform-origin: center;
+  -ms-transform-origin: center;
+  transform-origin: center;
+  -webkit-transition: color 250ms, -webkit-transform 250ms;
+  -moz-transition: color 250ms, -moz-transform 250ms;
+  -o-transition: color 250ms, -o-transform 250ms;
+  -ms-transition: color 250ms, -ms-transform 250ms;
+  transition: color 250ms, transform 250ms;
+}
+.thumbnail.task .photoContainer .postingIcon.success > svg path,
+.thumbnail.task .photoContainer .postingIcon.failure > svg path {
+  fill: rgba(255,255,255,0);
+  -webkit-transition: fill 250ms;
+  -moz-transition: fill 250ms;
+  -o-transition: fill 250ms;
+  -ms-transition: fill 250ms;
+  transition: fill 250ms;
+}
+.thumbnail.task .photoContainer .postingIcon.success > svg circle,
+.thumbnail.task .photoContainer .postingIcon.failure > svg circle {
+  fill: #fff;
+  stroke: #fff;
+  -webkit-animation: none;
+  -moz-animation: none;
+  -o-animation: none;
+  -ms-animation: none;
+  animation: none;
+  -webkit-transform: scale(1.3);
+  -moz-transform: scale(1.3);
+  -o-transform: scale(1.3);
+  -ms-transform: scale(1.3);
+  transform: scale(1.3);
+  -webkit-transform-origin: center;
+  -moz-transform-origin: center;
+  -o-transform-origin: center;
+  -ms-transform-origin: center;
+  transform-origin: center;
+  -webkit-transition: fill 250ms, stroke 250ms, -webkit-transform 250ms;
+  -moz-transition: fill 250ms, stroke 250ms, -moz-transform 250ms;
+  -o-transition: fill 250ms, stroke 250ms, -o-transform 250ms;
+  -ms-transition: fill 250ms, stroke 250ms, -ms-transform 250ms;
+  transition: fill 250ms, stroke 250ms, transform 250ms;
+}
+.thumbnail.task .photoContainer .postingIcon.showprogress > span:not(:first-of-type) {
+  display: none;
+}
+.thumbnail.task .photoContainer .postingIcon.showprogress > svg path {
+  stroke: none;
+}
+.thumbnail.task .photoContainer .postingIcon.showprogress > svg path:nth-of-type(1) {
+  fill: rgba(255,255,255,0.5);
+}
+.thumbnail.task .photoContainer .postingIcon.showprogress > svg path:nth-of-type(2) {
+  fill: #fff;
+}
+.thumbnail.task .photoContainer .postingIcon.showprogress > svg circle {
+  fill: rgba(255,255,255,0);
+  -webkit-animation: none;
+  -moz-animation: none;
+  -o-animation: none;
+  -ms-animation: none;
+  animation: none;
+}
+.thumbnail.task .selectedIndicator {
+  position: absolute;
+  background-color: #428bca;
+  top: 0;
+  right: 0;
+  border-bottom-left-radius: 4px;
+  border-bottom: solid #fff 4px;
+  border-left: solid #fff 4px;
+}
+.thumbnail.task .selectedIndicator i {
+  display: block;
+  padding: 9px 8px 9px 9px;
+}
+.thumbnail.task .videoIcon {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  color: #fff;
+  text-outline: #000;
+}
+.thumbnail.task .videoIcon i {
+  display: block;
+  padding: 9px 9px 9px 8px;
+  background-color: rgba(0,0,0,0.75);
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+}
+.navbar .btn-toolbar {
+  margin: 7px 0;
+}
+.btn.btn-text-left {
+  text-align: left;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+ul.dropdown-menu li.selected a {
+  color: #fff;
+  text-decoration: none;
+  background-color: #428bca;
+}
+@media (max-width: 767px) {
+  .jumbotron p {
+    font-size: 0.8em;
+  }
+}
+@-moz-keyframes cloudPulse {
+  0% {
+    fill: #fff;
+  }
+
+  50% {
+    fill: rgba(255,255,255,0);
+  }
+
+  100% {
+    fill: #fff;
+  }
+}
+@-webkit-keyframes cloudPulse {
+  0% {
+    fill: #fff;
+  }
+
+  50% {
+    fill: rgba(255,255,255,0);
+  }
+
+  100% {
+    fill: #fff;
+  }
+}
+@-o-keyframes cloudPulse {
+  0% {
+    fill: #fff;
+  }
+
+  50% {
+    fill: rgba(255,255,255,0);
+  }
+
+  100% {
+    fill: #fff;
+  }
+}
+@-ms-keyframes cloudPulse {
+  0% {
+    fill: #fff;
+  }
+
+  50% {
+    fill: rgba(255,255,255,0);
+  }
+
+  100% {
+    fill: #fff;
+  }
+}
+@keyframes cloudPulse {
+  0% {
+    fill: #fff;
+  }
+
+  50% {
+    fill: rgba(255,255,255,0);
+  }
+
+  100% {
+    fill: #fff;
+  }
+}
